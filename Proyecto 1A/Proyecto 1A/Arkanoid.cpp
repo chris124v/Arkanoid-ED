@@ -59,8 +59,8 @@ void main()
 	const int RY = monitor.y2 - monitor.y1;
 
 	//Aqui se establecen las variables para la creacion de una ventana de 100 pixeles de ancho y 800 de alto
-	int ResX = 1200;
-	int ResY = 675;
+	int ResX = 900;
+	int ResY = 1000;
 
 	//Tambien inicializamos la posicion del mouse en la ventana, aqui se almacena la posicion
 	int mousex = 0;
@@ -90,14 +90,19 @@ void main()
 	ALLEGRO_TIMER* timer2 = al_create_timer(1.0 / FPS1);
 
 	//En este punto cargaremos las imagenes y fonts (sprites) para el simulador, esto se realiza mediante un bitmap que 
-	//Se puede clasificar como un dibujo que se realiza en la consola.
-	ALLEGRO_BITMAP* Enemigo = al_load_bitmap("Bill.png");
-	ALLEGRO_BITMAP* Jugador = al_load_bitmap("dipper.png");
-	ALLEGRO_BITMAP* Fondo = al_load_bitmap("shibuya.jpg");
+	//Se puede clasificar como un dibujo que se realiza en la consola
+	ALLEGRO_BITMAP* Fondo = al_load_bitmap("fondo_main.jpg");
+	ALLEGRO_BITMAP* Logo = al_load_bitmap("arkanoid.png");
+
 
 	// Verificamos que las imágenes se cargaron correctamente
 	if (!Fondo) {
 		al_show_native_message_box(NULL, "Error", "Error", "No se pudo cargar el fondo", NULL, NULL);
+		return;
+	}
+
+	if (!Logo) {
+		al_show_native_message_box(NULL, "Error", "Error", "No se pudo cargar el logo", NULL, NULL);
 		return;
 	}
 
@@ -151,60 +156,8 @@ void main()
 		//Movimiento del jugador
 		//Aqui se establece en la cola de eventos el timer dado a que el movimiento mediante intervalos se da por el mismo
 		if (eventos.type == ALLEGRO_EVENT_TIMER) {
-			activo = true; //Retomamos la variable activo para establecer que el timer se esta utilizando
+			
 
-			//Aqui mediante operaciones del propio allegro presionando la tecla Down en especifico se define la direccion a donde se mueve el jugador que es hacia abajo
-			if (al_key_down(&teclado, ALLEGRO_KEY_DOWN)) {
-				y += speed; //La posicion en y se modificara 5 pixeles hacia abajo
-				dir = DOWN;
-			}
-
-			//Caso de subir
-			else if (al_key_down(&teclado, ALLEGRO_KEY_UP)) {
-				y -= speed;//La posicion en y se modificara 5 pixeles hacia arriba
-				dir = UP;
-			}
-
-			//Caso de la derecha
-			else if (al_key_down(&teclado, ALLEGRO_KEY_RIGHT)) {
-				x += speed; //5 pixeles a la derecha
-				dir = RIGHT;
-			}
-
-			//Caso de la izquierda
-			else if (al_key_down(&teclado, ALLEGRO_KEY_LEFT)) {
-				x -= speed; //5 pixeles a la izquierda
-				dir = LEFT;
-			}
-
-			//Movimiento enemigo mediante el segundo timer
-
-			if (eventos.timer.source == timer2) {
-
-				//Si la direccion que toma es la derecha
-				if (dirE == RIGHT) {
-					\
-
-						// Verifica si el enemigo está dentro de los límites de la pantalla
-						if (eneX + al_get_bitmap_width(Enemigo) < al_get_display_width(pantalla)) {
-							eneX += speedE; //Va hacia la derecha segun la cantidad de pixeles
-						}
-						else {
-							dirE = LEFT; // Cambia la dirección a izquierda
-						}
-				}
-
-				//Caso de que la direccion este a la izquierda
-				else if (dirE == LEFT) {
-					// Verifica si el enemigo está dentro de los límites de la pantalla
-					if (eneX > 0) {
-						eneX -= speedE;
-					}
-					else {
-						dirE = RIGHT; // Cambia la dirección a derecha
-					}
-				}
-			}
 		}
 
 		// Texto en pantalla y dibujo de los elementos
@@ -217,39 +170,42 @@ void main()
 				// Calcular posiciones para centrar el texto
 				int centro = ResX / 2; // Centro de la pantalla en X
 				int texto1 = ResY / 8;   // Posición Y para el primer texto
-				int texto2 = ResY / 4;   // Posición Y para el segundo texto
+				int texto2 = ResY / 2.5;   // Posición Y para el segundo texto
 
-				// Dibuja el fondo en todo el display
-				al_draw_bitmap(Fondo, 0, 0, 0);
+				
 
-				// Dibujar texto en blanco y centrado
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto1, ALLEGRO_ALIGN_CENTER, "Practica Allegro, Santiago y Christopher");
-				al_draw_text(font2, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "Moviendo al jugador");
+				al_draw_scaled_bitmap(Fondo, 0, 0, al_get_bitmap_width(Fondo), al_get_bitmap_height(Fondo), 0, 0, ResX, ResY, 0);
 
-				// Dibuja el jugador
-				al_draw_bitmap(Jugador, x, y, 0);
+				// Escalamos el logo para ubicarlo en una parte de la pantalla especifica
+				float scale = 0.9; 
+				int logoWidth = al_get_bitmap_width(Logo) * scale;
+				int logoHeight = al_get_bitmap_height(Logo) * scale;
+				int logoX = (ResX - logoWidth) / 2;
+				int logoY = ResY / 7;
 
-				// Dibuja el enemigo
-				al_draw_bitmap(Enemigo, eneX, 10, 0);
+				al_draw_scaled_bitmap(Logo, 0, 0, al_get_bitmap_width(Logo), al_get_bitmap_height(Logo), logoX, logoY, logoWidth, logoHeight, 0);
 
-				// Actualizar la pantalla
+				//Textos y su posicion exacta para el menu principal
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "JUGAR");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "INSTRUCCIONES");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "RESULTADOS");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "SALIR");
+
+				
 				al_flip_display();
 			}
 		}
 	}
 
 	// Liberar recursos esto con el fin de mantener la memoria
-	al_destroy_bitmap(Jugador);
-	al_destroy_bitmap(Enemigo);
 	al_destroy_bitmap(Fondo);
+	al_destroy_bitmap(Logo);
 	al_destroy_font(font);
 	al_destroy_font(font2);
 	al_destroy_timer(timer);
 	al_destroy_timer(timer2);
 	al_destroy_event_queue(cola_eventos);
 	al_destroy_display(pantalla);
-
-
 
 }
 
