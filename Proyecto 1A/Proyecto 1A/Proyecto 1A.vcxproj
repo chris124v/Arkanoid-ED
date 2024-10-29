@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncionesJuego.h" />
+    <ClInclude Include="Juego.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

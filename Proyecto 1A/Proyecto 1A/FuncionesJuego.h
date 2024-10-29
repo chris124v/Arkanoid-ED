@@ -20,6 +20,10 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
+#include "Juego.h"
+using namespace std;
+#pragma warning(disable:4996);  //Se desactiva alarma en el manejo de archivos
+
 const int ResX = 700;
 const int ResY = 800;
 const int diametro = 32;
@@ -329,27 +333,78 @@ void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
 void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
 
     for (int i = 0; i < cantidad; ++i) {
-
         Ptrenemigo nuevoEnemigo = new enemigo;
-        nuevoEnemigo->tipo = rand() % 5 + 1; // Tipos de enemigos de 1 a 5
-        nuevoEnemigo->x = rand() % (ResX - diametro); // Posición aleatoria en X
-        nuevoEnemigo->y = rand() % 200; // Posición aleatoria en Y (puedes ajustar el rango)
-        nuevoEnemigo->velocidadX = 0; // Velocidad en X, puedes modificar esto según el comportamiento
-        nuevoEnemigo->velocidadY = 0; // Velocidad en Y, puedes modificar esto según el comportamiento
-        nuevoEnemigo->estado = true; // Inicialmente activo
+        nuevoEnemigo->tipo = rand() % 3; // Tipos de enemigos: 0 = Adherido, 1 = Rebote, 2 = Lineal
+        nuevoEnemigo->x = rand() % (ResX - diametro); // Posición inicial aleatoria en X
+        nuevoEnemigo->y = rand() % (ResY / 2); // Posición inicial aleatoria en Y (parte superior de la pantalla)
+        nuevoEnemigo->estado = true; // Inicia activo
         nuevoEnemigo->Siguiente = nullptr;
 
-        // Añadir el nuevo enemigo a la lista enlazada
+        // Configurar el movimiento basado en el tipo de enemigo
+        switch (nuevoEnemigo->tipo) {
+        case 0: // Adherido
+            nuevoEnemigo->velocidadX = 2; // Velocidad para simular caminata
+            nuevoEnemigo->velocidadY = 2; // Velocidad para simular caminata
+            break;
+
+        case 1: // Rebote
+            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en X
+            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en Y
+            break;
+
+        case 2: // Lineal (Arriba-Abajo-Izquierda-Derecha)
+            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Puede moverse en X o Y
+            nuevoEnemigo->velocidadY = (nuevoEnemigo->velocidadX == 0 ? 2 : 0);
+            break;
+        }
+
+        // Añadir el nuevo enemigo a la lista de enemigos
         if (!enemigos) {
             enemigos = nuevoEnemigo;
         }
         else {
             Ptrenemigo temp = enemigos;
-            while (temp->Siguiente) {
-                temp = temp->Siguiente;
-            }
+            while (temp->Siguiente) temp = temp->Siguiente;
             temp->Siguiente = nuevoEnemigo;
         }
+    }
+}
+
+void mover_enemigos(Ptrenemigo& enemigos) {
+
+    Ptrenemigo temp = enemigos;
+    while (temp != nullptr) {
+        switch (temp->tipo) {
+        case 0: // Adherido
+            // Movimiento adherido, pegado a paredes o bloques
+            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
+            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
+            break;
+
+        case 1: // Rebote
+            // Movimiento de rebote en los bordes de la pantalla
+            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
+            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
+            break;
+
+        case 2: // Lineal (Arriba-Abajo-Izquierda-Derecha)
+            // Movimiento lineal con cambio de dirección aleatorio
+            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
+            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
+
+            // Cambiar dirección al azar cada cierto tiempo
+            if (rand() % 100 < 2) { // Probabilidad de 2% de cambiar de dirección
+                temp->velocidadX = (rand() % 2 == 0 ? 2 : -2);
+                temp->velocidadY = (rand() % 2 == 0 ? 2 : -2);
+            }
+            break;
+        }
+
+        // Actualizar posición del enemigo
+        temp->x += temp->velocidadX;
+        temp->y += temp->velocidadY;
+
+        temp = temp->Siguiente;
     }
 }
 
