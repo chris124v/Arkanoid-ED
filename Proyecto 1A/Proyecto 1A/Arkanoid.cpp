@@ -79,8 +79,8 @@ void main()
 
 	//En este punto cargaremos las imagenes y fonts (sprites) para el simulador, esto se realiza mediante un bitmap que 
 	//Se puede clasificar como un dibujo que se realiza en la consola
-	ALLEGRO_BITMAP* Fondo = al_load_bitmap("fondo_main.jpg");
-	ALLEGRO_BITMAP* Logo = al_load_bitmap("arkanoid.png");
+	ALLEGRO_BITMAP* Fondo = al_load_bitmap("Imagenes/fondo_main.jpg");
+	ALLEGRO_BITMAP* Logo = al_load_bitmap("Imagenes/arkanoid.png");
 
 
 	// Verificamos que las imágenes se cargaron correctamente
