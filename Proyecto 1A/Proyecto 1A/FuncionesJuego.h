@@ -1,4 +1,4 @@
-//adad
+//Funciones del juego implementadas posteriormente 
 
 
 #pragma once
@@ -46,13 +46,12 @@ typedef struct nave {
 };
 
 typedef struct bloque {
-
     float x;         // Posición en el eje X
     float y;         // Posición en el eje Y
-    bool estado;
-    int codigo;
-    bloque* Siguiente;
-
+    bool estado;     // Estado del bloque (activo/inactivo)
+    int codigo;      // Código del bloque
+    int resistencia; // Nivel de resistencia del bloque
+    bloque* Siguiente; // Puntero al siguiente bloque en la lista
 }*Ptrbloque;
 
 typedef struct enemigo {
@@ -81,9 +80,9 @@ void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
     bloques->y = ((i / 11) + 1) * diametro / 2 * 4;
     bloques->estado = true;
     bloques->codigo = i;
+    bloques->resistencia = rand() % 5 + 1; // Asignar un nivel de resistencia aleatorio entre 1 y 5
     bloques->Siguiente = NULL;
-
-};
+}
 
 void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
 
@@ -98,10 +97,10 @@ void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
 
 }
 
-void formacion_bloques(Ptrbloque& bloques, int nivel, int anchoVentana) {
+void formacion_bloques(Ptrbloque& bloques, int nivel) {
     const int espacio = 10;  // Espacio entre bloques
     const int numBloquesPorFila = 7;  // Cantidad de bloques en una fila
-    int xInicial = (anchoVentana - (numBloquesPorFila * diametro + (numBloquesPorFila - 1) * espacio)) / 2;
+    int xInicial = (ResX - (numBloquesPorFila * diametro + (numBloquesPorFila - 1) * espacio)) / 2;
     int yInicial = 50;
 
     for (int i = 0; i < numBloquesPorFila * 5; i++) {
@@ -217,7 +216,7 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, int anchoVentana) {
             }
         }
 
-        // Añadir el nuevo bloque a la lista de bloques , ifhr2ihf
+        // Añadir el nuevo bloque a la lista de bloques
         if (!bloques) {
             bloques = nuevoBloque;
         }
@@ -229,18 +228,137 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, int anchoVentana) {
     }
 }
 
+void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, int& vidas) {
 
+    // Colisión con las paredes laterales
+    if (balin.x - balin.radio <= 0 || balin.x + balin.radio >= ResX) {
+        balin.velocidadX = -balin.velocidadX;  // Rebote horizontal
+    }
 
+    // Colisión con la pared superior
+    if (balin.y - balin.radio <= 0) {
+        balin.velocidadY = -balin.velocidadY;  // Rebote vertical
+    }
 
+    // Colisión con la pared inferior (pierde una vida)
+    if (balin.y + balin.radio >= ResY) {
+        vidas--;  // Resta una vida
+        // Reinicia la posición de la bola (o cualquier lógica para "reset")
+        balin.x = jugador.x;
+        balin.y = jugador.y - 10;
+        balin.velocidadY = -fabs(balin.velocidadY); // Asegura que la bola suba después del reinicio
+    }
 
-void colision_bola(nave& nave, bola& balin, enemigo& enem) {
+    // Colisión con bloques
+    Ptrbloque bloqueActual = bloques;
+    while (bloqueActual != NULL) {
+        if (bloqueActual->estado) { // Solo verifica bloques activos
+            // Verifica colisión entre la bola y el bloque
+            if (balin.x + balin.radio >= bloqueActual->x &&
+                balin.x - balin.radio <= bloqueActual->x + diametro &&
+                balin.y + balin.radio >= bloqueActual->y &&
+                balin.y - balin.radio <= bloqueActual->y + diametro) {
 
+                // Reducir la resistencia del bloque
+                bloqueActual->resistencia--;
 
+                // Si la resistencia del bloque llega a 0, eliminarlo
+                if (bloqueActual->resistencia == 0) {
+                    bloqueActual->estado = false;
+                }
+
+                // Rebote en la dirección contraria de acuerdo al lado del impacto
+                if (balin.y < bloqueActual->y || balin.y > bloqueActual->y + diametro) {
+                    balin.velocidadY = -balin.velocidadY;
+                }
+                else {
+                    balin.velocidadX = -balin.velocidadX;
+                }
+                break;
+            }
+        }
+        bloqueActual = bloqueActual->Siguiente;
+    }
+
+    // Colisión con la nave
+    if (balin.y + balin.radio >= jugador.y &&balin.x >= jugador.x && balin.x <= jugador.x + diametro) {
+
+        // Rebote en función del lado del impacto con la nave
+        if (balin.x < jugador.x + diametro / 2) {
+            // Impacto en la mitad izquierda de la nave
+            balin.velocidadX = -fabs(balin.velocidadX); // Dirige la bola hacia la izquierda
+        }
+        else {
+            // Impacto en la mitad derecha de la nave
+            balin.velocidadX = fabs(balin.velocidadX);  // Dirige la bola hacia la derecha
+        }
+
+        // Modifica el ángulo del rebote dependiendo de la posición relativa a los bordes
+        if (balin.x < jugador.x + diametro / 4) {
+            balin.velocidadY = -fabs(balin.velocidadY) * 0.8; // Rebote más diagonal
+        }
+        else if (balin.x > jugador.x + 3 * diametro / 4) {
+            balin.velocidadY = -fabs(balin.velocidadY) * 0.8; // Rebote más diagonal en el otro extremo
+        }
+        else {
+            balin.velocidadY = -fabs(balin.velocidadY); // Rebote estándar
+        }
+    }
 }
 
+
 void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
+    // Inicializar la posición de la bola encima de la nave
+    Balin->x = jugador.x;
+    Balin->y = jugador.y - Balin->radio - 10; // Colocar la bola a 10 pixeles por encima de la nave
+
+    // Inicializar la velocidad de la bola
+    Balin->velocidadX = velocidad;
+    Balin->velocidadY = -velocidad; // La bola se mueve inicialmente hacia arriba
+
+    Balin->estado = true; // Establecer el estado de la bola a activa
+}
 
 
 
+void CrearArchivo(char* puntaje, char* nombre)//Se crea la función CrearArchivo que guarda el nombre y el puntaje en un archivo en memoria secundaria
+{
+    FILE* archivo;
+    archivo = fopen("resultados.txt", "a");
 
+    if (NULL == archivo) {
+        fprintf(stderr, "No se pudo crear archivo %s.\n", "resultados.txt");
+        exit(-1);
+    }
+    else {
+        fprintf(archivo, "Nombre:%s\n", nombre);
+        fprintf(archivo, "Puntaje: %s\n", puntaje);
+        fprintf(archivo, "\n\n");
+    }
+    fclose(archivo);
+}
+
+void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)//Se carga el archivo en memoria secundaria a pantalla con el puntaje y nombre escritos en el display
+{
+    char nombre[40];
+    char puntaje[10];
+    int i = 0;
+    int e = 0;
+    FILE* archivo;
+    archivo = fopen("resultados.txt", "r");
+    if (archivo != NULL) {
+        while (!feof(archivo)) {
+            fscanf(archivo, "Nombre:%s\n", nombre);
+            fscanf(archivo, "Puntaje: %s\n", puntaje);
+            if (inicio <= i && i < inicio + 4) {
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Nombre: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, nombre);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Puntaje: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, puntaje);
+                e++;
+            }
+            i++;
+        }
+        fclose(archivo);
+    }
 }
