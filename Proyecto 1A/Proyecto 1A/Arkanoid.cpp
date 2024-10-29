@@ -35,18 +35,8 @@ void main()
 	al_install_keyboard(); //Se inicializa la funcionalidad del teclado
 	al_install_mouse();//Se inicializa el mouse y sus funciones
 
-	//Establecemos direcciones y inicialamos el teclado como un evento
-	//Variables del Jugador
-	float x = 10, y = 430, speed = 5; //Aqui se establece la posicion a la esquina inferior izquierda 
-	bool activo = false; //Esto es para definir la existencia o utilizacion del timer
-	enum Direccion { DOWN, LEFT, RIGHT, UP }; //Direcciones posibles
+	
 	ALLEGRO_KEYBOARD_STATE teclado; //Inicializacion del teclado
-	int dir = DOWN; //Variable para el movimiento por pixeles
-
-	//variables enemigo
-	bool caminar = true; //Para reflejar que el enemigo siempre esta en movimiento
-	int dirE = RIGHT; //Direccion general
-	int eneX = 10, speedE = 6; //Movimiento por pixeles 
 
 	//Obetenemos la informacion del monitor respectiva y se almacena en una variable llamada monitor
 	ALLEGRO_MONITOR_INFO monitor;
@@ -58,19 +48,17 @@ void main()
 	const int RX = monitor.x2 - monitor.x1;
 	const int RY = monitor.y2 - monitor.y1;
 
-	//Aqui se establecen las variables para la creacion de una ventana de 100 pixeles de ancho y 800 de alto
-	int ResX = 900;
-	int ResY = 1000;
-
 	//Tambien inicializamos la posicion del mouse en la ventana, aqui se almacena la posicion
 	int mousex = 0;
 	int mousey = 0;
 
 	//Creacion de la pantalla o ventana desplegable mediante un puntero pantalla que almacena la resolucion dada anteriormente
-	ALLEGRO_DISPLAY* pantalla = al_create_display(ResX, ResY);
+	ALLEGRO_DISPLAY* pantalla = al_create_display(RX, RY);
+	al_set_display_flag(pantalla, ALLEGRO_FULLSCREEN, true); 
 
-	//Se establece la pantalla en una parte del monitor, esto lo centra tomando un tercio de la pantalla
-	al_set_window_position(pantalla, RX / 3 - ResX / 3, RY / 3 - ResY / 3);
+	// Obtener dimensiones de la pantalla
+	int ResX = al_get_display_width(pantalla);
+	int ResY = al_get_display_height(pantalla);
 
 	//Titulo de la ventana
 	al_set_window_title(pantalla, "Practica Allegro, Santiago y Christopher");
@@ -107,8 +95,8 @@ void main()
 	}
 
 	//Establecemos las fonts para una impresion del texto
-	ALLEGRO_FONT* font = al_load_ttf_font("Bangers-Regular.ttf", 40, NULL);
-	ALLEGRO_FONT* font2 = al_load_ttf_font("Bangers-Regular.ttf", 25, NULL);
+	ALLEGRO_FONT* font = al_load_ttf_font("Video-Font.ttf", 40, NULL);
+	ALLEGRO_FONT* font2 = al_load_ttf_font("Video-Font.ttf", 24, NULL);
 
 	//Aqui se establece el color de la panatlla cuando inicia el juego
 	al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -169,30 +157,41 @@ void main()
 
 				// Calcular posiciones para centrar el texto
 				int centro = ResX / 2; // Centro de la pantalla en X
-				int texto1 = ResY / 8;   // Posición Y para el primer texto
-				int texto2 = ResY / 2.5;   // Posición Y para el segundo texto
-
-				
-
-				al_draw_scaled_bitmap(Fondo, 0, 0, al_get_bitmap_width(Fondo), al_get_bitmap_height(Fondo), 0, 0, ResX, ResY, 0);
+				int texto1 = ResY / 8;  
+				int texto2 = ResY / 2.8;   
+				int texto3 = ResY / 2.2;
+				int texto4 = ResY / 1.8;
+				int texto5 = ResY / 1.5;
 
 				// Escalamos el logo para ubicarlo en una parte de la pantalla especifica
-				float scale = 0.9; 
-				int logoWidth = al_get_bitmap_width(Logo) * scale;
-				int logoHeight = al_get_bitmap_height(Logo) * scale;
-				int logoX = (ResX - logoWidth) / 2;
-				int logoY = ResY / 7;
+				float scale = 1.3; 
+				int ancho = al_get_bitmap_width(Logo) * scale;
+				int alto = al_get_bitmap_height(Logo) * scale;
+				int logoX = (ResX - ancho) / 2;
+				int logoY = ResY / 15;
 
-				al_draw_scaled_bitmap(Logo, 0, 0, al_get_bitmap_width(Logo), al_get_bitmap_height(Logo), logoX, logoY, logoWidth, logoHeight, 0);
+				al_draw_bitmap(Fondo, 0, 0, 0);
+
+				al_draw_scaled_bitmap(Logo, 0, 0, al_get_bitmap_width(Logo), al_get_bitmap_height(Logo), logoX, logoY, ancho, alto, 0);
 
 				//Textos y su posicion exacta para el menu principal
 				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "JUGAR");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "INSTRUCCIONES");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "RESULTADOS");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "SALIR");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto3, ALLEGRO_ALIGN_CENTER, "REGLAS");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto4, ALLEGRO_ALIGN_CENTER, "RESULTADOS");
+				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto5, ALLEGRO_ALIGN_CENTER, "SALIR");
 
 				
 				al_flip_display();
+			}
+		}
+
+		//Aqui hay un condicional aparte del salir normal en donde si se presiona "esc" de primeras se sale del programa
+		if (eventos.type == ALLEGRO_EVENT_KEY_DOWN)
+		{
+			//Si se presiona la tecla escape se sale del juego
+			switch (eventos.keyboard.keycode) {
+			case ALLEGRO_KEY_ESCAPE:
+				creacion = false;
 			}
 		}
 	}
