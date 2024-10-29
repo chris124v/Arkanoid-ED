@@ -1,6 +1,5 @@
 //Funciones del juego implementadas posteriormente 
 
-
 #pragma once
 
 #include <stdio.h>
@@ -98,6 +97,7 @@ void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
 }
 
 void formacion_bloques(Ptrbloque& bloques, int nivel) {
+
     const int espacio = 10;  // Espacio entre bloques
     const int numBloquesPorFila = 7;  // Cantidad de bloques en una fila
     int xInicial = (ResX - (numBloquesPorFila * diametro + (numBloquesPorFila - 1) * espacio)) / 2;
@@ -228,8 +228,7 @@ void formacion_bloques(Ptrbloque& bloques, int nivel) {
     }
 }
 
-void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, int& vidas) {
-
+void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas) {
     // Colisión con las paredes laterales
     if (balin.x - balin.radio <= 0 || balin.x + balin.radio >= ResX) {
         balin.velocidadX = -balin.velocidadX;  // Rebote horizontal
@@ -243,31 +242,24 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, int& vidas) {
     // Colisión con la pared inferior (pierde una vida)
     if (balin.y + balin.radio >= ResY) {
         vidas--;  // Resta una vida
-        // Reinicia la posición de la bola (o cualquier lógica para "reset")
         balin.x = jugador.x;
         balin.y = jugador.y - 10;
-        balin.velocidadY = -fabs(balin.velocidadY); // Asegura que la bola suba después del reinicio
+        balin.velocidadY = -fabs(balin.velocidadY);
     }
 
     // Colisión con bloques
     Ptrbloque bloqueActual = bloques;
     while (bloqueActual != NULL) {
         if (bloqueActual->estado) { // Solo verifica bloques activos
-            // Verifica colisión entre la bola y el bloque
             if (balin.x + balin.radio >= bloqueActual->x &&
                 balin.x - balin.radio <= bloqueActual->x + diametro &&
                 balin.y + balin.radio >= bloqueActual->y &&
                 balin.y - balin.radio <= bloqueActual->y + diametro) {
 
-                // Reducir la resistencia del bloque
                 bloqueActual->resistencia--;
-
-                // Si la resistencia del bloque llega a 0, eliminarlo
                 if (bloqueActual->resistencia == 0) {
                     bloqueActual->estado = false;
                 }
-
-                // Rebote en la dirección contraria de acuerdo al lado del impacto
                 if (balin.y < bloqueActual->y || balin.y > bloqueActual->y + diametro) {
                     balin.velocidadY = -balin.velocidadY;
                 }
@@ -280,34 +272,49 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, int& vidas) {
         bloqueActual = bloqueActual->Siguiente;
     }
 
-    // Colisión con la nave
-    if (balin.y + balin.radio >= jugador.y &&balin.x >= jugador.x && balin.x <= jugador.x + diametro) {
+    // Colisión con enemigos
+    Ptrenemigo enemigoActual = enemigos;
+    while (enemigoActual != NULL) {
+        if (enemigoActual->estado) { // Solo verifica enemigos activos
+            if (balin.x + balin.radio >= enemigoActual->x &&
+                balin.x - balin.radio <= enemigoActual->x + diametro &&
+                balin.y + balin.radio >= enemigoActual->y &&
+                balin.y - balin.radio <= enemigoActual->y + diametro) {
 
-        // Rebote en función del lado del impacto con la nave
+                // Desactivar el enemigo
+                enemigoActual->estado = false;
+                // Aquí puedes agregar lógica para aumentar puntaje o efectos visuales
+                balin.velocidadY = -balin.velocidadY; // Rebote al colisionar con el enemigo
+                break; // Salir después de colisionar con un enemigo
+            }
+        }
+        enemigoActual = enemigoActual->Siguiente;
+    }
+
+    // Colisión con la nave
+    if (balin.y + balin.radio >= jugador.y && balin.x >= jugador.x && balin.x <= jugador.x + diametro) {
         if (balin.x < jugador.x + diametro / 2) {
-            // Impacto en la mitad izquierda de la nave
-            balin.velocidadX = -fabs(balin.velocidadX); // Dirige la bola hacia la izquierda
+            balin.velocidadX = -fabs(balin.velocidadX);
         }
         else {
-            // Impacto en la mitad derecha de la nave
-            balin.velocidadX = fabs(balin.velocidadX);  // Dirige la bola hacia la derecha
+            balin.velocidadX = fabs(balin.velocidadX);
         }
-
-        // Modifica el ángulo del rebote dependiendo de la posición relativa a los bordes
         if (balin.x < jugador.x + diametro / 4) {
-            balin.velocidadY = -fabs(balin.velocidadY) * 0.8; // Rebote más diagonal
+            balin.velocidadY = -fabs(balin.velocidadY) * 0.8;
         }
         else if (balin.x > jugador.x + 3 * diametro / 4) {
-            balin.velocidadY = -fabs(balin.velocidadY) * 0.8; // Rebote más diagonal en el otro extremo
+            balin.velocidadY = -fabs(balin.velocidadY) * 0.8;
         }
         else {
-            balin.velocidadY = -fabs(balin.velocidadY); // Rebote estándar
+            balin.velocidadY = -fabs(balin.velocidadY);
         }
     }
 }
 
 
+
 void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
+
     // Inicializar la posición de la bola encima de la nave
     Balin->x = jugador.x;
     Balin->y = jugador.y - Balin->radio - 10; // Colocar la bola a 10 pixeles por encima de la nave
@@ -319,6 +326,32 @@ void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
     Balin->estado = true; // Establecer el estado de la bola a activa
 }
 
+void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
+
+    for (int i = 0; i < cantidad; ++i) {
+
+        Ptrenemigo nuevoEnemigo = new enemigo;
+        nuevoEnemigo->tipo = rand() % 5 + 1; // Tipos de enemigos de 1 a 5
+        nuevoEnemigo->x = rand() % (ResX - diametro); // Posición aleatoria en X
+        nuevoEnemigo->y = rand() % 200; // Posición aleatoria en Y (puedes ajustar el rango)
+        nuevoEnemigo->velocidadX = 0; // Velocidad en X, puedes modificar esto según el comportamiento
+        nuevoEnemigo->velocidadY = 0; // Velocidad en Y, puedes modificar esto según el comportamiento
+        nuevoEnemigo->estado = true; // Inicialmente activo
+        nuevoEnemigo->Siguiente = nullptr;
+
+        // Añadir el nuevo enemigo a la lista enlazada
+        if (!enemigos) {
+            enemigos = nuevoEnemigo;
+        }
+        else {
+            Ptrenemigo temp = enemigos;
+            while (temp->Siguiente) {
+                temp = temp->Siguiente;
+            }
+            temp->Siguiente = nuevoEnemigo;
+        }
+    }
+}
 
 
 void CrearArchivo(char* puntaje, char* nombre)//Se crea la función CrearArchivo que guarda el nombre y el puntaje en un archivo en memoria secundaria
