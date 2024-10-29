@@ -217,7 +217,7 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, int anchoVentana) {
             }
         }
 
-        // Añadir el nuevo bloque a la lista de bloques
+        // Añadir el nuevo bloque a la lista de bloques , ifhr2ihf
         if (!bloques) {
             bloques = nuevoBloque;
         }
