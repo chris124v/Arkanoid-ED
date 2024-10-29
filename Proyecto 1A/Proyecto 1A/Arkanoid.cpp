@@ -194,6 +194,7 @@ void main()
 				creacion = false;
 			}
 		}
+
 	}
 
 	// Liberar recursos esto con el fin de mantener la memoria
