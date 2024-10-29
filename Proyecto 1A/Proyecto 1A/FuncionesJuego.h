@@ -69,16 +69,15 @@ typedef struct enemigo {
 }*Ptrenemigo;
 
 void Inicializar_nave(nave& Jugador, int x) {
-    
+
     Jugador.x = x / 2;
     Jugador.y = ResY - 100;
     Jugador.velocidadY = 5;
 
-}
+};
 
 void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
 
-    bloques->x = x / 2 - ResX / 2 + (i % 11) ((ResX - 200) / 10) + 100;
     bloques->y = ((i / 11) + 1) * diametro / 2 * 4;
     bloques->estado = true;
     bloques->codigo = i;
@@ -241,8 +240,7 @@ void colision_bola(nave& nave, bola& balin, enemigo& enem) {
 
 void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
 
-    Balin.x = jugador.x;
-    Balin.y = jugador.y - 10;
+
 
 
 }
