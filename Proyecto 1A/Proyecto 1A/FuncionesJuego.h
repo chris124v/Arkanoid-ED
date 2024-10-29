@@ -1,3 +1,6 @@
+//
+
+
 #pragma once
 
 #include <stdio.h>
@@ -23,15 +26,17 @@ const int ResY = 800;
 const int diametro = 32;
 
 typedef struct bola {
+
     int codigo;
     float x;         // Posición en el eje X
     float y;         // Posición en el eje Y
     float radio;     // Radio de la bola
     float velocidadX; // Velocidad en el eje X
     float velocidadY; // Velocidad en el eje Y
-    bool Estado;
-    int color;       // Color de la bola (opcional, según Allegro)
+    bool estado;
+    int color;       
     bola* Siguiente;
+
 }*Ptrbola;
 
 typedef struct nave {
@@ -41,30 +46,74 @@ typedef struct nave {
 };
 
 typedef struct bloque {
+
     float x;         // Posición en el eje X
     float y;         // Posición en el eje Y
-    bool Estado;
+    bool estado;
     int codigo;
     bloque* Siguiente;
+
 }*Ptrbloque;
 
 typedef struct enemigo {
+
     float x;         // Posición en el eje X
     float y;         // Posición en el eje Y
     float velocidadX; // Velocidad en el eje X
     float velocidadY; // Velocidad en el eje Y
     int codigo;
     int tipo;
+    bool estado;
     enemigo* Siguiente;
+
 }*Ptrenemigo;
 
-void Inicializarnave(nave& Jugador, int x){
+void Inicializar_nave(nave& Jugador, int x){
+
     Jugador.x = x / 2;
     Jugador.y = ResY - 100;
     Jugador.velocidadY = 5;
+
 }
 
-void inicializarbloque(Ptrbloque& bloques) {
+void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
 
+    bloques -> x = x / 2 - ResX / 2 + (i % 11) * ((ResX - 200) / 10) + 100;
+    bloques -> y = ((i / 11) + 1) * diametro / 2 * 4; 
+    bloques->estado = true;
+    bloques->codigo = i;
+    bloques->Siguiente = NULL;
 
 };
+
+void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
+
+    enemigo->x = x / 2 - ResX / 2 + (i % 11) * ((ResX - 200) / 10) + 100;
+    enemigo->y = ((i / 11) + 1) * diametro / 2 * 4;
+    enemigo->velocidadX = 5;
+    enemigo->velocidadY = 5;
+    enemigo->codigo = i;
+    enemigo->tipo = t;
+    enemigo->estado = true;
+    enemigo->Siguiente = NULL;
+
+}
+
+
+
+
+
+
+
+void colision_bola(nave& nave, bola& balin, enemigo& enem) {
+
+
+}
+
+void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
+    
+    Balin.x = jugador.x;
+    Balin.y = jugador.y - 10;
+    
+
+}
