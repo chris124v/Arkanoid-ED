@@ -12,10 +12,10 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
-
+#include "Juego.h"
 
 using namespace std;
-
+#pragma warning(disable:4996); //Desabilita advertencias de C 
 #define FPS 60.0
 #define FPS1 60.0
 
@@ -115,6 +115,11 @@ void main()
 	int X = al_get_display_width(pantalla);
 	int Y = al_get_display_height(pantalla);
 
+	bool hecho = true;
+	int a = 0;
+	int inicio = 0;
+	bool modo;
+
 	//Estos dos timers nos permitiran el movimiento de los dos personajes principales
 	al_start_timer(timer);
 	al_start_timer(timer2);
@@ -192,6 +197,20 @@ void main()
 			if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
 			{
 				if (eventos.mouse.button & 1) {
+
+					al_destroy_display(pantalla);
+					int vida = 3;
+					int nivel = 1;
+					modo = true;
+
+					//En esta condicion while mientras el contador de vidas no llegue a 0 se puede continuar con el juego
+					while (vida != 0) {
+						vida = arkanoid(nivel, vida);
+						nivel = nivel + 1;
+					}
+
+					main();//Se vuelve a lanzar el menú si se sale del juego
+					hecho = false;
 					
 
 					

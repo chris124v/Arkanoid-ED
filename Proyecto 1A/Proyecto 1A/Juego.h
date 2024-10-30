@@ -29,15 +29,12 @@ int arkanoid(int nivel, int vidas) {
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
 
     ALLEGRO_EVENT_QUEUE* cola_eventos = al_create_event_queue();
-    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/bloque.png");
-    ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo.png");
+    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Gris_1.png");
+    ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo_juego.png");
 
-    ALLEGRO_SAMPLE* musica = al_load_sample("Musica/musica.wav");
-    ALLEGRO_SAMPLE* rebote = al_load_sample("Musica/rebote.wav");
-    ALLEGRO_SAMPLE* romper_bloque = al_load_sample("Musica/romper_bloque.wav");
 
-    fuente1 = al_load_font("pixel.ttf", 40, NULL);
-    fuente2 = al_load_font("pixel.ttf", 30, NULL);
+    fuente1 = al_load_font("Video-Font.ttf", 40, NULL);
+    fuente2 = al_load_font("Video-Font.ttf", 30, NULL);
 
     al_register_event_source(cola_eventos, al_get_timer_event_source(timer));
     al_register_event_source(cola_eventos, al_get_keyboard_event_source());
@@ -63,7 +60,6 @@ int arkanoid(int nivel, int vidas) {
     al_flip_display();
     al_rest(1);
 
-    al_play_sample(musica, 0.3, 0, 1, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     // Iniciar temporizador
     al_start_timer(timer);
@@ -228,7 +224,6 @@ int arkanoid(int nivel, int vidas) {
     }
 
     // Destruir recursos de Allegro
-    al_destroy_sample(musica);
     al_destroy_timer(timer);
     al_destroy_font(fuente1);
     al_destroy_font(fuente2);
