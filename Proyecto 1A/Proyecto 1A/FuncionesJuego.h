@@ -233,39 +233,38 @@ void formacion_bloques(Ptrbloque& bloques, int nivel) {
     }
 }
 
-void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas) {
-    // Colisión con las paredes laterales
-    if (balin.x - balin.radio <= 0 || balin.x + balin.radio >= ResX) {
-        balin.velocidadX = -balin.velocidadX;  // Rebote horizontal
+void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY) {
+    // Rebote en los bordes laterales del área centrada
+    if (balin.x - balin.radio <= centroX || balin.x + balin.radio >= centroX + ResX) {
+        balin.velocidadX = -balin.velocidadX;
+    }
+    // Rebote en los bordes superior e inferior del área centrada
+    if (balin.y - balin.radio <= centroY || balin.y + balin.radio >= centroY + ResY) {
+        balin.velocidadY = -balin.velocidadY;
     }
 
-    // Colisión con la pared superior
-    if (balin.y - balin.radio <= 0) {
-        balin.velocidadY = -balin.velocidadY;  // Rebote vertical
-    }
-
-    // Colisión con la pared inferior (pierde una vida)
-    if (balin.y + balin.radio >= ResY) {
+    // Colisión con la pared inferior de la zona centrada (pierde una vida)
+    if (balin.y + balin.radio >= centroY + ResY) {
         vidas--;  // Resta una vida
-        balin.x = jugador.x;
-        balin.y = jugador.y - 10;
+        balin.x = jugador.x + centroX;  // Reposiciona en la zona centrada
+        balin.y = jugador.y + centroY - 10;
         balin.velocidadY = -fabs(balin.velocidadY);
     }
 
-    // Colisión con bloques
+    // Colisión con bloques (ajustada con `centroX` y `centroY` para la zona centrada)
     Ptrbloque bloqueActual = bloques;
     while (bloqueActual != NULL) {
         if (bloqueActual->estado) { // Solo verifica bloques activos
-            if (balin.x + balin.radio >= bloqueActual->x &&
-                balin.x - balin.radio <= bloqueActual->x + diametro &&
-                balin.y + balin.radio >= bloqueActual->y &&
-                balin.y - balin.radio <= bloqueActual->y + diametro) {
+            if (balin.x + balin.radio >= bloqueActual->x + centroX &&
+                balin.x - balin.radio <= bloqueActual->x + centroX + diametro &&
+                balin.y + balin.radio >= bloqueActual->y + centroY &&
+                balin.y - balin.radio <= bloqueActual->y + centroY + diametro) {
 
                 bloqueActual->resistencia--;
                 if (bloqueActual->resistencia == 0) {
                     bloqueActual->estado = false;
                 }
-                if (balin.y < bloqueActual->y || balin.y > bloqueActual->y + diametro) {
+                if (balin.y < bloqueActual->y + centroY || balin.y > bloqueActual->y + centroY + diametro) {
                     balin.velocidadY = -balin.velocidadY;
                 }
                 else {
@@ -277,37 +276,35 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& e
         bloqueActual = bloqueActual->Siguiente;
     }
 
-    // Colisión con enemigos
+    // Colisión con enemigos (ajustada con `centroX` y `centroY` para la zona centrada)
     Ptrenemigo enemigoActual = enemigos;
     while (enemigoActual != NULL) {
         if (enemigoActual->estado) { // Solo verifica enemigos activos
-            if (balin.x + balin.radio >= enemigoActual->x &&
-                balin.x - balin.radio <= enemigoActual->x + diametro &&
-                balin.y + balin.radio >= enemigoActual->y &&
-                balin.y - balin.radio <= enemigoActual->y + diametro) {
+            if (balin.x + balin.radio >= enemigoActual->x + centroX &&
+                balin.x - balin.radio <= enemigoActual->x + centroX + diametro &&
+                balin.y + balin.radio >= enemigoActual->y + centroY &&
+                balin.y - balin.radio <= enemigoActual->y + centroY + diametro) {
 
-                // Desactivar el enemigo
-                enemigoActual->estado = false;
-                // Aquí puedes agregar lógica para aumentar puntaje o efectos visuales
-                balin.velocidadY = -balin.velocidadY; // Rebote al colisionar con el enemigo
-                break; // Salir después de colisionar con un enemigo
+                enemigoActual->estado = false;  // Desactivar el enemigo
+                balin.velocidadY = -balin.velocidadY;  // Rebote al colisionar con el enemigo
+                break;
             }
         }
         enemigoActual = enemigoActual->Siguiente;
     }
 
-    // Colisión con la nave
-    if (balin.y + balin.radio >= jugador.y && balin.x >= jugador.x && balin.x <= jugador.x + diametro) {
-        if (balin.x < jugador.x + diametro / 2) {
+    // Colisión con la nave (ajustada con `centroX` y `centroY`)
+    if (balin.y + balin.radio >= jugador.y + centroY && balin.x >= jugador.x + centroX && balin.x <= jugador.x + centroX + diametro) {
+        if (balin.x < jugador.x + centroX + diametro / 2) {
             balin.velocidadX = -fabs(balin.velocidadX);
         }
         else {
             balin.velocidadX = fabs(balin.velocidadX);
         }
-        if (balin.x < jugador.x + diametro / 4) {
+        if (balin.x < jugador.x + centroX + diametro / 4) {
             balin.velocidadY = -fabs(balin.velocidadY) * 0.8;
         }
-        else if (balin.x > jugador.x + 3 * diametro / 4) {
+        else if (balin.x > jugador.x + centroX + 3 * diametro / 4) {
             balin.velocidadY = -fabs(balin.velocidadY) * 0.8;
         }
         else {
@@ -315,7 +312,6 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& e
         }
     }
 }
-
 
 
 void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
@@ -372,34 +368,25 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
     }
 }
 
-void mover_enemigos(Ptrenemigo& enemigos) {
-
+void mover_enemigos(Ptrenemigo& enemigos, int centroX, int centroY) {
     Ptrenemigo temp = enemigos;
     while (temp != nullptr) {
-        switch (temp->tipo) {
-        case 0: // Adherido
-            // Movimiento adherido, pegado a paredes o bloques
-            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
-            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
-            break;
-
-        case 1: // Rebote
-            // Movimiento de rebote en los bordes de la pantalla
-            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
-            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
-            break;
-
-        case 2: // Lineal (Arriba-Abajo-Izquierda-Derecha)
-            // Movimiento lineal con cambio de dirección aleatorio
-            if (temp->x <= 0 || temp->x + diametro >= ResX) temp->velocidadX = -temp->velocidadX;
-            if (temp->y <= 0 || temp->y + diametro >= ResY) temp->velocidadY = -temp->velocidadY;
-
-            // Cambiar dirección al azar cada cierto tiempo
-            if (rand() % 100 < 2) { // Probabilidad de 2% de cambiar de dirección
-                temp->velocidadX = (rand() % 2 == 0 ? 2 : -2);
-                temp->velocidadY = (rand() % 2 == 0 ? 2 : -2);
-            }
-            break;
+        // Limitar el movimiento a los bordes del área del fondo centrado
+        if (temp->x <= centroX) {
+            temp->x = centroX; // Mantener dentro del límite izquierdo
+            temp->velocidadX = abs(temp->velocidadX); // Mover hacia la derecha
+        }
+        if (temp->x + diametro >= centroX + ResX) {
+            temp->x = centroX + ResX - diametro; // Mantener dentro del límite derecho
+            temp->velocidadX = -abs(temp->velocidadX); // Mover hacia la izquierda
+        }
+        if (temp->y <= centroY) {
+            temp->y = centroY; // Mantener dentro del límite superior
+            temp->velocidadY = abs(temp->velocidadY); // Mover hacia abajo
+        }
+        if (temp->y + diametro >= centroY + ResY) {
+            temp->y = centroY + ResY - diametro; // Mantener dentro del límite inferior
+            temp->velocidadY = -abs(temp->velocidadY); // Mover hacia arriba
         }
 
         // Actualizar posición del enemigo
