@@ -20,6 +20,7 @@ using namespace std;
 #define FPS1 60.0
 
 void main()
+
 {
 	//Este condicional if funciona en caso de que se de un error al crear la ventana emergente
 	if (!al_init()) {
@@ -35,8 +36,6 @@ void main()
 	al_install_keyboard(); //Se inicializa la funcionalidad del teclado
 	al_install_mouse();//Se inicializa el mouse y sus funciones
 
-	
-	ALLEGRO_KEYBOARD_STATE teclado; //Inicializacion del teclado
 
 	//Obetenemos la informacion del monitor respectiva y se almacena en una variable llamada monitor
 	ALLEGRO_MONITOR_INFO monitor;
@@ -96,7 +95,7 @@ void main()
 
 	//Establecemos las fonts para una impresion del texto
 	ALLEGRO_FONT* font = al_load_ttf_font("Video-Font.ttf", 40, NULL);
-	ALLEGRO_FONT* font2 = al_load_ttf_font("Video-Font.ttf", 24, NULL);
+	ALLEGRO_FONT* font2 = al_load_ttf_font("Video-Font.ttf", 25, NULL);
 
 	//Aqui se establece el color de la panatlla cuando inicia el juego
 	al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -113,9 +112,13 @@ void main()
 	//El ciclo se ejecute
 	bool creacion = true;
 
+	int X = al_get_display_width(pantalla);
+	int Y = al_get_display_height(pantalla);
+
 	//Estos dos timers nos permitiran el movimiento de los dos personajes principales
 	al_start_timer(timer);
 	al_start_timer(timer2);
+
 
 	//Aqui definimos el ciclo while que mientra la variable sea true se sigue ejecutando
 	while (creacion) {
@@ -127,8 +130,6 @@ void main()
 		//Aqui en el wait for event estos se guardaran en el parametro por referencia eventos para cuando sea ejecutado
 		al_wait_for_event(cola_eventos, &eventos);
 
-		//Esteblecemos el evento de teclado
-		al_get_keyboard_state(&teclado);
 
 		//Esto se registra en la cola de eventos para cerrar el programa y acabar el ciclo while
 		if (eventos.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -152,16 +153,10 @@ void main()
 		if (eventos.type == ALLEGRO_EVENT_TIMER) {
 			if (eventos.timer.source == timer) {
 
+
 				// Limpiar la pantalla
 				al_clear_to_color(al_map_rgb(0, 0, 0));
 
-				// Calcular posiciones para centrar el texto
-				int centro = ResX / 2; // Centro de la pantalla en X
-				int texto1 = ResY / 8;  
-				int texto2 = ResY / 2.8;   
-				int texto3 = ResY / 2.2;
-				int texto4 = ResY / 1.8;
-				int texto5 = ResY / 1.5;
 
 				// Escalamos el logo para ubicarlo en una parte de la pantalla especifica
 				float scale = 1.3; 
@@ -175,13 +170,86 @@ void main()
 				al_draw_scaled_bitmap(Logo, 0, 0, al_get_bitmap_width(Logo), al_get_bitmap_height(Logo), logoX, logoY, ancho, alto, 0);
 
 				//Textos y su posicion exacta para el menu principal
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto2, ALLEGRO_ALIGN_CENTER, "JUGAR");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto3, ALLEGRO_ALIGN_CENTER, "REGLAS");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto4, ALLEGRO_ALIGN_CENTER, "RESULTADOS");
-				al_draw_text(font, al_map_rgb(255, 255, 255), centro, texto5, ALLEGRO_ALIGN_CENTER, "SALIR");
-
+				al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (RY * (250.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "JUGAR");
+				al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (RY * (325.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "REGLAS");
+				al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (RY * (390.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "RESULTADOS");
+				al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (RY * (470.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "SALIR");
+				al_draw_text(font2, al_map_rgb(255, 255, 255), 50, RY - al_get_font_line_height(font2) - 50, ALLEGRO_ALIGN_LEFT, "by Santiago and Christopher");
 				
-				al_flip_display();
+			}
+		}
+
+		
+
+		//Si se posiciona el mouse en las coordenadas donde indica la opción jugar
+		if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (RY * 255.0 / 720.0) && mousey <= (RY * 290.0 / 720.0))) {
+
+			//Esto lo que hace es cambiar el color de jugar en color amarillo
+			al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (250.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "JUGAR");
+
+			//En caso de que se realice un evento del mouse
+
+			if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+			{
+				if (eventos.mouse.button & 1) {
+					
+
+					
+				}
+			}
+		}
+
+		//Si se posiciona el mouse en las coordenadas donde indica la opción reglas
+		if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (RY * 330.0 / 720.0) && mousey <= (RY * 375.0 / 720.0))) {
+
+			//Esto lo que hace es cambiar el color de jugar en color amarillo
+			al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (325.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "REGLAS");
+
+			//En caso de que se realice un evento del mouse
+
+			if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+			{
+				if (eventos.mouse.button & 1) {
+
+
+
+				}
+			}
+		}
+
+		//Si se posiciona el mouse en las coordenadas donde indica la opción de resultados
+		if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (RY * 395.0 / 720.0) && mousey <= (RY * 450.0 / 720.0))) {
+
+			//Esto lo que hace es cambiar el color de jugar en color amarillo
+			al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (390.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "RESULTADOS");
+
+			//En caso de que se realice un evento del mouse
+
+			if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+			{
+				if (eventos.mouse.button & 1) {
+
+
+
+				}
+			}
+		}
+
+		//Si se posiciona el mouse en las coordenadas donde indica la opción de salir
+		if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (RY * 475.0 / 720.0) && mousey <= (RY * 530.0 / 720.0))) {
+
+			//Esto lo que hace es cambiar el color de jugar en color amarillo
+			al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (470.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "SALIR");
+
+			//En caso de que se realice un evento del mouse
+
+			if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+			{
+				if (eventos.mouse.button & 1) {
+
+					creacion = false;
+
+				}
 			}
 		}
 
@@ -194,6 +262,8 @@ void main()
 				creacion = false;
 			}
 		}
+
+		al_flip_display();
 
 	}
 
@@ -209,4 +279,4 @@ void main()
 
 }
 
-//hola mundo sehguwerihwehghrghweherguerghuhuergerghu
+
