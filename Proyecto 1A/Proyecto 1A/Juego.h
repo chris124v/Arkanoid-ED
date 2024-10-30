@@ -14,8 +14,8 @@ int arkanoid(int nivel, int vidas) {
     const int pantallaAlto = monitor.y2 - monitor.y1;
 
     // Dimensiones fijas del área de juego
-    const int RX = 700; // Ancho fijo del área de juego
-    const int RY = 800; // Altura fija del área de juego
+    const int RX = 800; // Ancho fijo del área de juego
+    const int RY = 1100; // Altura fija del área de juego
 
     al_set_new_display_flags(ALLEGRO_FULLSCREEN); // Pantalla completa
     ALLEGRO_DISPLAY* pantalla = al_create_display(pantallaAncho, pantallaAlto);
@@ -62,12 +62,21 @@ int arkanoid(int nivel, int vidas) {
     int salida = 3;
 
     nave jugador;
-    Ptrbola bola = new struct bola;
+
+    Ptrbola balin = new bola;
+    balin->radio = 5;  // Radio de 5 píxeles
+    balin->estado = true;
+
     Ptrbloque bloques = NULL;
     Ptrenemigo enemigos = NULL;
     int probabilidadEnemigos = 2;
     int maxEnemigosPorNivel = 1;  // Maximum number of enemies per level
     int enemigosGenerados = 0;
+
+    
+
+    enum Direccion { NINGUNA, IZQUIERDA, DERECHA };
+    enum Direccion Dir = NINGUNA;
 
     // Calcula la posición para centrar el área de juego en pantalla completa
     int centroX = (pantallaAncho - RX) / 2;
@@ -77,12 +86,16 @@ int arkanoid(int nivel, int vidas) {
     inicializar_bola(bola, jugador, 5);
     formacion_bloques(bloques, nivel, bloque);
 
+
+
+
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_flip_display();
     al_rest(1);
     al_start_timer(timer);
 
     while (hecho) {
+
         ALLEGRO_EVENT eventos;
         al_wait_for_event(cola_eventos, &eventos);
 
@@ -142,6 +155,7 @@ int arkanoid(int nivel, int vidas) {
                 if (Dir == IZQUIERDA)
                     Dir = NINGUNA;
                 break;
+
             case ALLEGRO_KEY_RIGHT:
                 if (Dir == DERECHA)
                     Dir = NINGUNA;
@@ -158,20 +172,14 @@ int arkanoid(int nivel, int vidas) {
 
             mover_enemigos(enemigos, bloques, centroX, centroY, bloque);
 
-            // Ajusta la colisión de la bola para rebotar en los bordes del área del fondo centrado
-            if (bola->x - bola->radio <= centroX || bola->x + bola->radio >= centroX + RX) {
-                bola->velocidadX = -bola->velocidadX; // Rebote en los bordes laterales
-            }
-            if (bola->y - bola->radio <= centroY || bola->y + bola->radio >= centroY + RY) {
-                bola->velocidadY = -bola->velocidadY; // Rebote en los bordes superior e inferior
+            // Actualizar posición de la bola
+            if (balin->estado) {
+                balin->x += balin->velocidadX;
+                balin->y += balin->velocidadY;
             }
 
             colision_bola(*bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque);
 
-            if (vidas == 0) {
-                salida = 0;
-                hecho = false;
-            }
 
             // Movimiento del jugador
             switch (Dir) {
@@ -265,6 +273,7 @@ int arkanoid(int nivel, int vidas) {
 
             al_flip_display();
         }
+
     }
 
     // Limpiar recursos al terminar el juego

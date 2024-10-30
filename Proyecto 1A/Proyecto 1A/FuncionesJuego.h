@@ -25,6 +25,7 @@
 #include <allegro5/allegro_acodec.h>
 
 #include "Juego.h"
+
 using namespace std;
 #pragma warning(disable:4996);  //Se desactiva alarma en el manejo de archivos
 
@@ -82,6 +83,7 @@ void Inicializar_nave(nave& Jugador, int x) {
     Jugador.x = x / 2;
     Jugador.y = ResY - 100;
     Jugador.velocidadY = 5;
+    Jugador.estado = true;
 
 };
 
@@ -479,6 +481,34 @@ void dibujar_nave(nave& jugador, ALLEGRO_BITMAP* nave_bitmap, int centroX, int c
         );
     }
 }
+
+void dibujar_bola(bola& balin, int centroX, int centroY) {
+    if (balin.estado) {  // Solo dibuja si la bola está activa
+        // Dibuja la bola como un círculo lleno
+        al_draw_filled_circle(balin.x + centroX, balin.y + centroY,
+            balin.radio, al_map_rgb(255, 255, 255));  // Color blanco
+    }
+}
+
+void dibujar_nave(nave& jugador, ALLEGRO_BITMAP* nave_bitmap, int centroX, int centroY) {
+
+    if (jugador.estado) {  // Verifica si la nave está activa
+        // Obtener dimensiones originales del bitmap
+        int bitmap_ancho = al_get_bitmap_width(nave_bitmap);
+        int bitmap_alto = al_get_bitmap_height(nave_bitmap);
+
+        // Dibujar el bitmap escalado en la posición de la nave
+        al_draw_scaled_bitmap(nave_bitmap,
+            0, 0,                          // Coordenadas fuente X,Y
+            bitmap_ancho, bitmap_alto,     // Ancho y alto fuente
+            jugador.x + centroX,           // Posición destino X
+            jugador.y + centroY,           // Posición destino Y
+            NAVE_ANCHO, NAVE_ALTO,         // Ancho y alto destino
+            0                              // Flags
+        );
+    }
+}
+
 
 void CrearArchivo(char* puntaje, char* nombre)//Se crea la función CrearArchivo que guarda el nombre y el puntaje en un archivo en memoria secundaria
 {
