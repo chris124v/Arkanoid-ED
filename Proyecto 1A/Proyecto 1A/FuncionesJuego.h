@@ -1,6 +1,7 @@
 //Funciones del juego implementadas posteriormente 
 
 #pragma once
+#define NOMINMAX
 
 #include <stdio.h>
 #include <iostream>
@@ -10,6 +11,9 @@
 #include <cstdlib>
 #include <time.h>
 #include <algorithm> 
+
+#undef min
+#undef max
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_ttf.h>
@@ -27,6 +31,8 @@ using namespace std;
 const int ResX = 700;
 const int ResY = 800;
 const int diametro = 32;
+const int NAVE_ANCHO = 100;  // Ancho deseado de la nave
+const int NAVE_ALTO = 35;
 
 typedef struct bola {
 
@@ -46,6 +52,7 @@ typedef struct nave {
     float x;         // Posición en el eje X
     float y;         // Posición en el eje Y
     int velocidadY;
+    bool estado;
 };
 
 typedef struct bloque {
@@ -100,20 +107,30 @@ void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
 
 }
 
-void formacion_bloques(Ptrbloque& bloques, int nivel) {
+void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) {
+    // Factor de escala y dimensiones escaladas del bloque
+    const float escalaFactor = 0.5;
+    const int anchoBloque = al_get_bitmap_width(bloques2) * escalaFactor;
+    const int altoBloque = al_get_bitmap_height(bloques2) * escalaFactor;
 
-    const int espacio = 10;  // Espacio entre bloques
-    const int numBloquesPorFila = 7;  // Cantidad de bloques en una fila
-    int xInicial = (ResX - (numBloquesPorFila * diametro + (numBloquesPorFila - 1) * espacio)) / 2;
+    // Define el espacio entre los bloques
+    const int espacioHorizontal = 0; // Ajusta según necesidad
+    const int espacioVertical = 0;   // Ajusta según necesidad
+
+    // Número de bloques por fila
+    const int numBloquesPorFila = 7;
+
+    // Posición inicial de los bloques para centrarlos en el área de juego
+    int xInicial = (ResX - (numBloquesPorFila * anchoBloque + (numBloquesPorFila - 1) * espacioHorizontal)) / 2;
     int yInicial = 50;
 
     for (int i = 0; i < numBloquesPorFila * 5; i++) {
         Ptrbloque nuevoBloque = new bloque;
-        inicializar_bloque(nuevoBloque, i, ResX);
-        nuevoBloque->x = xInicial + (i % numBloquesPorFila) * (diametro + espacio);
-        nuevoBloque->y = yInicial + (i / numBloquesPorFila) * (diametro + espacio);
+        nuevoBloque->x = xInicial + (i % numBloquesPorFila) * (anchoBloque + espacioHorizontal);
+        nuevoBloque->y = yInicial + (i / numBloquesPorFila) * (altoBloque + espacioVertical);
+
         nuevoBloque->estado = true;
-        nuevoBloque->codigo = i;
+        nuevoBloque->resistencia = rand() % 5 + 1; // Resistencia aleatoria entre 1 y 5
         nuevoBloque->Siguiente = NULL;
 
         // Condiciones para las diferentes formaciones
@@ -221,7 +238,7 @@ void formacion_bloques(Ptrbloque& bloques, int nivel) {
             }
         }
 
-        // Añadir el nuevo bloque a la lista de bloques
+        // Añadir el nuevo bloque a la lista
         if (!bloques) {
             bloques = nuevoBloque;
         }
@@ -233,7 +250,11 @@ void formacion_bloques(Ptrbloque& bloques, int nivel) {
     }
 }
 
-void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY) {
+void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2) {
+    // Escalado del tamaño del bloque (ajusta según tu necesidad)
+    const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
+    const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
+
     // Rebote en los bordes laterales del área centrada
     if (balin.x - balin.radio <= centroX || balin.x + balin.radio >= centroX + ResX) {
         balin.velocidadX = -balin.velocidadX;
@@ -251,24 +272,27 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& e
         balin.velocidadY = -fabs(balin.velocidadY);
     }
 
-    // Colisión con bloques (ajustada con `centroX` y `centroY` para la zona centrada)
+    // Colisión de la bola con bloques, considerando el tamaño escalado
     Ptrbloque bloqueActual = bloques;
     while (bloqueActual != NULL) {
         if (bloqueActual->estado) { // Solo verifica bloques activos
             if (balin.x + balin.radio >= bloqueActual->x + centroX &&
-                balin.x - balin.radio <= bloqueActual->x + centroX + diametro &&
+                balin.x - balin.radio <= bloqueActual->x + centroX + anchoBloqueEscalado &&
                 balin.y + balin.radio >= bloqueActual->y + centroY &&
-                balin.y - balin.radio <= bloqueActual->y + centroY + diametro) {
+                balin.y - balin.radio <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
+                // Reducir resistencia del bloque en la colisión
                 bloqueActual->resistencia--;
                 if (bloqueActual->resistencia == 0) {
-                    bloqueActual->estado = false;
+                    bloqueActual->estado = false; // Desactivar bloque cuando resistencia llega a 0
                 }
-                if (balin.y < bloqueActual->y + centroY || balin.y > bloqueActual->y + centroY + diametro) {
-                    balin.velocidadY = -balin.velocidadY;
+
+                // Rebote de la bola en función de la posición de colisión
+                if (balin.y < bloqueActual->y + centroY || balin.y > bloqueActual->y + centroY + altoBloqueEscalado) {
+                    balin.velocidadY = -balin.velocidadY; // Rebote en el eje Y
                 }
                 else {
-                    balin.velocidadX = -balin.velocidadX;
+                    balin.velocidadX = -balin.velocidadX; // Rebote en el eje X
                 }
                 break;
             }
@@ -276,7 +300,7 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& e
         bloqueActual = bloqueActual->Siguiente;
     }
 
-    // Colisión con enemigos (ajustada con `centroX` y `centroY` para la zona centrada)
+    // Colisión de la bola con enemigos
     Ptrenemigo enemigoActual = enemigos;
     while (enemigoActual != NULL) {
         if (enemigoActual->estado) { // Solo verifica enemigos activos
@@ -286,14 +310,14 @@ void colision_bola(bola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& e
                 balin.y - balin.radio <= enemigoActual->y + centroY + diametro) {
 
                 enemigoActual->estado = false;  // Desactivar el enemigo
-                balin.velocidadY = -balin.velocidadY;  // Rebote al colisionar con el enemigo
+                balin.velocidadY = -balin.velocidadY;  // Rebote de la bola al colisionar con el enemigo
                 break;
             }
         }
         enemigoActual = enemigoActual->Siguiente;
     }
 
-    // Colisión con la nave (ajustada con `centroX` y `centroY`)
+    // Colisión con la nave
     if (balin.y + balin.radio >= jugador.y + centroY && balin.x >= jugador.x + centroX && balin.x <= jugador.x + centroX + diametro) {
         if (balin.x < jugador.x + centroX + diametro / 2) {
             balin.velocidadX = -fabs(balin.velocidadX);
@@ -327,22 +351,26 @@ void inicializar_bola(Ptrbola& Balin, nave& jugador, int velocidad) {
     Balin->estado = true; // Establecer el estado de la bola a activa
 }
 
-void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
+void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel) {
+    // Limitar la cantidad de enemigos generados a un máximo de 4 o 5
+    // Máximo 5 enemigos por nivel
 
     for (int i = 0; i < cantidad; ++i) {
         Ptrenemigo nuevoEnemigo = new enemigo;
-        int tipo = rand() % 3; // Selección aleatoria del tipo de enemigo // Tipos de enemigos: 0 = Adherido, 1 = Rebote, 2 = Lineal
+        int tipo = rand() % 3; // Selección aleatoria del tipo de enemigo (0 = Adherido, 1 = Rebote, 2 = Lineal)
         inicializar_enemigo(nuevoEnemigo, i, tipo, ResX);
-        nuevoEnemigo->x = rand() % (ResX - diametro); // Posición inicial aleatoria en X
-        nuevoEnemigo->y = rand() % (ResY / 2); // Posición inicial aleatoria en Y (parte superior de la pantalla)
-        nuevoEnemigo->estado = true; // Inicia activo
+
+        // Posición inicial aleatoria en la parte superior de la pantalla
+        nuevoEnemigo->x = rand() % (ResX - diametro); // X entre 0 y el ancho de pantalla menos el diámetro
+        nuevoEnemigo->y = rand() % (ResY / 2);        // Y entre 0 y la mitad de la pantalla
+        nuevoEnemigo->estado = true;                  // Enemigo inicia activo
         nuevoEnemigo->Siguiente = nullptr;
 
         // Configurar el movimiento basado en el tipo de enemigo
-        switch (nuevoEnemigo->tipo) {
+        switch (tipo) {
         case 0: // Adherido
-            nuevoEnemigo->velocidadX = 2; // Velocidad para simular caminata
-            nuevoEnemigo->velocidadY = 2; // Velocidad para simular caminata
+            nuevoEnemigo->velocidadX = 2; // Velocidad baja en X
+            nuevoEnemigo->velocidadY = 2; // Velocidad baja en Y
             break;
 
         case 1: // Rebote
@@ -351,7 +379,7 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
             break;
 
         case 2: // Lineal (Arriba-Abajo-Izquierda-Derecha)
-            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Puede moverse en X o Y
+            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Solo en X o solo en Y
             nuevoEnemigo->velocidadY = (nuevoEnemigo->velocidadX == 0 ? 2 : 0);
             break;
         }
@@ -368,25 +396,61 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
     }
 }
 
-void mover_enemigos(Ptrenemigo& enemigos, int centroX, int centroY) {
+void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2) {
+    // Definir el tamaño escalado de los bloques
+    const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
+    const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
+
+    // Radio del enemigo (mitad del diámetro)
+    const int radioEnemigo = diametro / 2;
+
     Ptrenemigo temp = enemigos;
     while (temp != nullptr) {
         // Limitar el movimiento a los bordes del área del fondo centrado
         if (temp->x <= centroX) {
-            temp->x = centroX; // Mantener dentro del límite izquierdo
+            temp->x = centroX;
             temp->velocidadX = abs(temp->velocidadX); // Mover hacia la derecha
         }
         if (temp->x + diametro >= centroX + ResX) {
-            temp->x = centroX + ResX - diametro; // Mantener dentro del límite derecho
+            temp->x = centroX + ResX - diametro;
             temp->velocidadX = -abs(temp->velocidadX); // Mover hacia la izquierda
         }
         if (temp->y <= centroY) {
-            temp->y = centroY; // Mantener dentro del límite superior
+            temp->y = centroY;
             temp->velocidadY = abs(temp->velocidadY); // Mover hacia abajo
         }
         if (temp->y + diametro >= centroY + ResY) {
-            temp->y = centroY + ResY - diametro; // Mantener dentro del límite inferior
+            temp->y = centroY + ResY - diametro;
             temp->velocidadY = -abs(temp->velocidadY); // Mover hacia arriba
+        }
+
+        // Verificar colisión con bloques, ajustando por el radio del enemigo
+        Ptrbloque bloqueActual = bloques;
+        while (bloqueActual != NULL) {
+            if (bloqueActual->estado) {
+                // Verifica colisión considerando el radio del enemigo
+                if (temp->x + radioEnemigo >= bloqueActual->x + centroX &&
+                    temp->x - radioEnemigo <= bloqueActual->x + centroX + anchoBloqueEscalado &&
+                    temp->y + radioEnemigo >= bloqueActual->y + centroY &&
+                    temp->y - radioEnemigo <= bloqueActual->y + centroY + altoBloqueEscalado) {
+
+                    // Colisión detectada, manejar interacción
+                    bloqueActual->resistencia--;
+                    if (bloqueActual->resistencia == 0) {
+                        bloqueActual->estado = false; // Desactivar bloque si resistencia llega a 0
+                    }
+
+                    // Rebote del enemigo al chocar con el bloque
+                    if (temp->y < bloqueActual->y + centroY || temp->y > bloqueActual->y + centroY + altoBloqueEscalado) {
+                        temp->velocidadY = -temp->velocidadY;  // Cambiar dirección vertical
+                    }
+                    else {
+                        temp->velocidadX = -temp->velocidadX;  // Cambiar dirección horizontal
+                    }
+                    break; // Termina la comprobación una vez que se detecta una colisión
+                }
+            }
+            bloqueActual = bloqueActual->Siguiente;
         }
 
         // Actualizar posición del enemigo
@@ -397,6 +461,24 @@ void mover_enemigos(Ptrenemigo& enemigos, int centroX, int centroY) {
     }
 }
 
+void dibujar_nave(nave& jugador, ALLEGRO_BITMAP* nave_bitmap, int centroX, int centroY) {
+
+    if (jugador.estado) {  // Verifica si la nave está activa
+        // Obtener dimensiones originales del bitmap
+        int bitmap_ancho = al_get_bitmap_width(nave_bitmap);
+        int bitmap_alto = al_get_bitmap_height(nave_bitmap);
+
+        // Dibujar el bitmap escalado en la posición de la nave
+        al_draw_scaled_bitmap(nave_bitmap,
+            0, 0,                          // Coordenadas fuente X,Y
+            bitmap_ancho, bitmap_alto,     // Ancho y alto fuente
+            jugador.x + centroX,           // Posición destino X
+            jugador.y + centroY,           // Posición destino Y
+            NAVE_ANCHO, NAVE_ALTO,         // Ancho y alto destino
+            0                              // Flags
+        );
+    }
+}
 
 void CrearArchivo(char* puntaje, char* nombre)//Se crea la función CrearArchivo que guarda el nombre y el puntaje en un archivo en memoria secundaria
 {

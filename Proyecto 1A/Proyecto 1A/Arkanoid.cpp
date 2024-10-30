@@ -12,7 +12,8 @@ using namespace std;
 #pragma warning(disable:4996);
 #define FPS 60.0
 
-void main(){
+void main()
+{
     if (!al_init()) {
         al_show_native_message_box(NULL, "Ventana Emergente", "Error", "No se puede inicializar la Practica de Allegro", NULL, NULL);
         return;
