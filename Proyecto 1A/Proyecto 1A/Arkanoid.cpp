@@ -3,7 +3,7 @@
 // Santiago Espinoza Rendon, Carnet: 2024156530
 
 
-//Librerias de allegro para la realizacion del proyecto
+//Librerias de allegro para la realizacion del proyectos
 #include <stdio.h>
 #include <iostream>
 #include <allegro5/allegro5.h>
