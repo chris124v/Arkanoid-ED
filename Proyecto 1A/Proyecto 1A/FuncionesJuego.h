@@ -80,7 +80,7 @@ void Inicializar_nave(nave& Jugador, int x) {
 
 void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
 
-    bloques->y = ((i / 11) + 1) * diametro / 2 * 4;
+    bloques->y = ((x / 11) + 1) * diametro / 2 * 4;
     bloques->estado = true;
     bloques->codigo = i;
     bloques->resistencia = rand() % 5 + 1; // Asignar un nivel de resistencia aleatorio entre 1 y 5
@@ -109,6 +109,7 @@ void formacion_bloques(Ptrbloque& bloques, int nivel) {
 
     for (int i = 0; i < numBloquesPorFila * 5; i++) {
         Ptrbloque nuevoBloque = new bloque;
+        inicializar_bloque(nuevoBloque, i, ResX);
         nuevoBloque->x = xInicial + (i % numBloquesPorFila) * (diametro + espacio);
         nuevoBloque->y = yInicial + (i / numBloquesPorFila) * (diametro + espacio);
         nuevoBloque->estado = true;
@@ -334,7 +335,8 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad) {
 
     for (int i = 0; i < cantidad; ++i) {
         Ptrenemigo nuevoEnemigo = new enemigo;
-        nuevoEnemigo->tipo = rand() % 3; // Tipos de enemigos: 0 = Adherido, 1 = Rebote, 2 = Lineal
+        int tipo = rand() % 3; // Selección aleatoria del tipo de enemigo // Tipos de enemigos: 0 = Adherido, 1 = Rebote, 2 = Lineal
+        inicializar_enemigo(nuevoEnemigo, i, tipo, ResX);
         nuevoEnemigo->x = rand() % (ResX - diametro); // Posición inicial aleatoria en X
         nuevoEnemigo->y = rand() % (ResY / 2); // Posición inicial aleatoria en Y (parte superior de la pantalla)
         nuevoEnemigo->estado = true; // Inicia activo
@@ -449,4 +451,16 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)//Se carga el 
         }
         fclose(archivo);
     }
+
+}
+
+bool quedanBloques(Ptrbloque bloques) {
+    Ptrbloque temp = bloques;
+    while (temp != NULL) {
+        if (temp->estado) {
+            return true; // Aún quedan bloques activos
+        }
+        temp = temp->Siguiente;
+    }
+    return false; // No quedan bloques activos
 }
