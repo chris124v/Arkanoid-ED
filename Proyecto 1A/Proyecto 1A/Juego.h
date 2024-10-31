@@ -33,9 +33,10 @@ int arkanoid(int nivel, int vidas) {
         return 0;
     }
 
-    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Gris_1.png");
+    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Celeste_1.png");
     ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo_juego.png");
     ALLEGRO_BITMAP* nave2 = al_load_bitmap("Imagenes/Nave_2.png");
+    ALLEGRO_BITMAP* fondo2 = al_load_bitmap("Imagenes/fondo_main.jpg");
 
     if (!bloque || !fondo || !nave2) {
         al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o más imágenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
@@ -62,7 +63,7 @@ int arkanoid(int nivel, int vidas) {
     int salida = 3;
 
     nave jugador;
-    Ptrbola bola = new struct bola;
+    Ptrbola bola = NULL; // Aquí ya lo tienes
     Ptrbloque bloques = NULL;
     Ptrenemigo enemigos = NULL;
     int probabilidadEnemigos = 2;
@@ -112,7 +113,7 @@ int arkanoid(int nivel, int vidas) {
             al_rest(2);
 
             formacion_bloques(bloques, nivel, bloque);
-            inicializar_bola(bola, jugador, 5);
+            
             puntos += 100;
             continue;
         }
@@ -150,6 +151,7 @@ int arkanoid(int nivel, int vidas) {
         }
 
         if (eventos.type == ALLEGRO_EVENT_TIMER) {
+
             // Baja la probabilidad de aparición de enemigos al 2%
             if (enemigosGenerados < maxEnemigosPorNivel && rand() % 100 < probabilidadEnemigos) {
                 generar_enemigos(enemigos, 1, nivel);
@@ -158,36 +160,25 @@ int arkanoid(int nivel, int vidas) {
 
             mover_enemigos(enemigos, bloques, centroX, centroY, bloque);
 
-            // Ajusta la colisión de la bola para rebotar en los bordes del área del fondo centrado
-            if (bola->x - bola->radio <= centroX || bola->x + bola->radio >= centroX + RX) {
-                bola->velocidadX = -bola->velocidadX; // Rebote en los bordes laterales
-            }
-            if (bola->y - bola->radio <= centroY || bola->y + bola->radio >= centroY + RY) {
-                bola->velocidadY = -bola->velocidadY; // Rebote en los bordes superior e inferior
-            }
 
-            colision_bola(*bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque);
-
-            if (vidas == 0) {
-                salida = 0;
-                hecho = false;
-            }
-
+      
             // Movimiento del jugador
             switch (Dir) {
 
             case IZQUIERDA:
-                if (jugador.x >= centroX - RX / 2 + 15) // Límite izquierdo
+                if (jugador.x >= centroX - RX / 2 - 120) // Límite izquierdo
                     jugador.x -= jugador.velocidadY;
                 break;
 
             case DERECHA:
-                if (jugador.x <= centroX + RX / 2 - 15) // Límite derecho
+                if (jugador.x <= centroX + RX / 2 - 300) // Límite derecho
                     jugador.x += jugador.velocidadY;
                 break;
             }
 
             al_clear_to_color(al_map_rgb(0, 0, 0));
+
+            al_draw_bitmap(fondo2, 0, 0, 0);
 
             // Dibujar fondo centrado sin cambiar su proporción vertical
             al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
@@ -196,6 +187,7 @@ int arkanoid(int nivel, int vidas) {
             Ptrbloque tempBloque = bloques;
             while (tempBloque != NULL) {
                 if (tempBloque->estado) {
+
                     al_draw_scaled_bitmap(
                         bloque,                           // Bitmap original del bloque
                         0, 0,                             // Coordenadas origen en la imagen (0, 0 en este caso)
@@ -224,14 +216,19 @@ int arkanoid(int nivel, int vidas) {
 
             // Dibujar enemigos en amarillo y limitar su movimiento al área del fondo
             // Dibujar enemigos en amarillo y limitar su movimiento al área del fondo
+
             Ptrenemigo tempEnemigo = enemigos;
+
             while (tempEnemigo != NULL) {
+
                 if (tempEnemigo->estado) {
+
                     // Rebote en los bordes del fondo
-                    if (tempEnemigo->x < centroX || tempEnemigo->x > centroX + RX - diametro) {
+                    if (tempEnemigo->x < centroX + diametro + 15 || tempEnemigo->x > centroX + RX - diametro - 20) {
                         tempEnemigo->velocidadX = -tempEnemigo->velocidadX;
                     }
-                    if (tempEnemigo->y < centroY || tempEnemigo->y > centroY + RY - diametro) {
+
+                    if (tempEnemigo->y < centroY + diametro + 15 || tempEnemigo->y > centroY + RY) {
                         tempEnemigo->velocidadY = -tempEnemigo->velocidadY;
                     }
 
@@ -251,8 +248,71 @@ int arkanoid(int nivel, int vidas) {
                 tempEnemigo = tempEnemigo->Siguiente;
             }
 
-            // Dibujar la bola en rojo
-            al_draw_filled_circle(bola->x + centroX, bola->y + centroY, bola->radio, al_map_rgb(255, 0, 0));
+            // Actualizar la posición de la bola y manejar colisiones
+            colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque);
+
+            if (bola->estado) { // Verifica si la bola está activa
+
+                // Rebote en los bordes del fondo
+                if (bola->x - bola->radio < centroX + 25) { // Límite izquierdo
+                    bola->x = centroX + bola->radio + 25; // Ajustar la posición para no salir
+                    bola->velocidadX = -bola->velocidadX; // Rebote en el borde izquierdo
+                }
+                else if (bola->x + bola->radio > centroX + RX - 25) { // Límite derecho
+                    bola->x = centroX + RX - bola->radio - 25; // Ajustar la posición para no salir
+                    bola->velocidadX = -bola->velocidadX; // Rebote en el borde derecho
+                }
+
+                if (bola->y - bola->radio < centroY + 30) { // Límite superior
+                    bola->y = centroY + bola->radio + 30; // Ajustar la posición para no salir
+                    bola->velocidadY = -bola->velocidadY; // Rebote en el borde superior
+                }
+
+                else if (bola->y + bola->radio > centroY + RY) { // Límite inferior
+                    vidas--; // Resta una vida si la bola sale por el borde inferior
+                    bola->x = jugador.x + centroX; // Reposiciona la bola en la zona centrada
+                    bola->y = jugador.y + centroY - 10; // Reposiciona por encima de la nave
+                    bola->velocidadY = -fabs(bola->velocidadY); // Rebote hacia arriba
+                }
+
+                // Actualizar la posición de la bola
+                bola->x += bola->velocidadX;
+                bola->y += bola->velocidadY;
+
+                // Dibujar la bola
+                al_draw_filled_circle(bola->x, bola->y, bola->radio, al_map_rgb(255, 0, 0)); // Dibuja la bola en rojo
+
+                // Dibuja la hitbox de la bola como un contorno para depuración
+                al_draw_circle(bola->x, bola->y, bola->radio, al_map_rgb(255, 0, 0), 1); // Contorno rojo para la hitbox
+            }
+
+            if (bola->estado && jugador.estado) {
+                // Calcular las posiciones de la hitbox de la nave
+                float naveIzquierda = jugador.x + centroX;
+                float naveDerecha = naveIzquierda + NAVE_ANCHO;
+                float naveSuperior = jugador.y + centroY;
+                float naveInferior = naveSuperior + NAVE_ALTO;
+
+                // Verificar si la bola está en la hitbox de la nave
+                if (bola->x + bola->radio > naveIzquierda && bola->x - bola->radio < naveDerecha &&
+                    bola->y + bola->radio > naveSuperior && bola->y - bola->radio < naveInferior) {
+
+                    // Determinar la dirección del rebote
+                    if (bola->y + bola->radio >= naveSuperior && bola->y - bola->radio <= naveInferior) {
+                        // Rebote horizontal
+                        bola->velocidadY = -bola->velocidadY; // Rebote hacia arriba
+                        bola->y = naveSuperior - bola->radio; // Ajustar la posición para no quedar atrapada
+                    }
+                    else if (bola->x + bola->radio >= naveIzquierda && bola->x - bola->radio <= naveDerecha) {
+                        // Rebote vertical
+                        bola->velocidadX = -bola->velocidadX; // Rebote hacia los lados
+                        bola->x = (bola->x < naveIzquierda) ? naveIzquierda - bola->radio : naveDerecha + bola->radio; // Ajustar la posición
+                    }
+                }
+            }
+
+
+    
 
             dibujar_nave(jugador, nave2, centroX, centroY);
 
