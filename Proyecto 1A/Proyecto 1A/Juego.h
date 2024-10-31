@@ -17,8 +17,9 @@ int arkanoid(int nivel, int vidas) {
     const int RX = 800; // Ancho fijo del área de juego
     const int RY = 1100; // Altura fija del área de juego
 
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN); // Pantalla completa
     ALLEGRO_DISPLAY* pantalla = al_create_display(pantallaAncho, pantallaAlto);
+    al_set_display_flag(pantalla, ALLEGRO_FULLSCREEN, true);
+
     al_set_window_title(pantalla, "Arkanoid");
 
     if (!pantalla) {

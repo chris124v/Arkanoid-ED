@@ -108,39 +108,39 @@ void main()
                 al_draw_scaled_bitmap(Fondo, 0, 0, anchoescalado, alturaescalada, 0, 0, RX, RY, 0);
 
                 // Obtener dimensiones originales del logo
-                int logo_width = al_get_bitmap_width(Logo);
-                int logo_height = al_get_bitmap_height(Logo);
+            int logo_width = al_get_bitmap_width(Logo);
+            int logo_height = al_get_bitmap_height(Logo);
 
-                // Definir un tamaño máximo para el logo (por ejemplo, 30% del ancho y altura de la pantalla)
-                float max_scale_factor = 0.3; // Porcentaje máximo del tamaño de la pantalla
-                float max_logo_width = X * max_scale_factor;
-                float max_logo_height = Y * max_scale_factor;
+            // Definir un tamaño máximo para el logo (por ejemplo, 30% del ancho y altura de la pantalla)
+            float max_scale_factor = 0.3; // Porcentaje máximo del tamaño de la pantalla
+            float max_logo_width = X * max_scale_factor;
+            float max_logo_height = Y * max_scale_factor;
 
-                // Calcular factor de escala basado en las dimensiones máximas permitidas
-                float scale_factor_x = max_logo_width / logo_width;
-                float scale_factor_y = max_logo_height / logo_height;
+            // Calcular factor de escala basado en las dimensiones máximas permitidas
+            float scale_factor_x = max_logo_width / logo_width;
+            float scale_factor_y = max_logo_height / logo_height;
 
-                // Usar el menor factor para mantener la proporción
-                float scale_factor = min(scale_factor_x, scale_factor_y);
+            // Usar el menor factor para mantener la proporción
+            float scale_factor = min(scale_factor_x, scale_factor_y);
 
-                // Calcular dimensiones escaladas del logo
-                int scaled_logo_width = (int)(logo_width * scale_factor);
-                int scaled_logo_height = (int)(logo_height * scale_factor);
+            // Calcular dimensiones escaladas del logo
+            int scaled_logo_width = (int)(logo_width * scale_factor);
+            int scaled_logo_height = (int)(logo_height * scale_factor);
 
-                // Posicionar el logo centrado en la pantalla
-                int logoX = (X - scaled_logo_width) / 2;
-                int logoY = (Y - scaled_logo_height) / 15; // Puedes ajustar esta posición verticalmente
+            // Posicionar el logo centrado en la pantalla
+            int logoX = (X - scaled_logo_width) / 2; 
+            int logoY = (Y - scaled_logo_height) / 15; // Puedes ajustar esta posición verticalmente
 
-                // Dibujar el logo escalado manteniendo su proporción
-                al_draw_scaled_bitmap(Logo,
-                    0, 0,
-                    logo_width,
-                    logo_height,
-                    logoX,
-                    logoY,
-                    scaled_logo_width,
-                    scaled_logo_height,
-                    0);
+            // Dibujar el logo escalado manteniendo su proporción
+            al_draw_scaled_bitmap(Logo,
+                                  0, 0,
+                                  logo_width,
+                                  logo_height,
+                                  logoX,
+                                  logoY,
+                                  scaled_logo_width,
+                                  scaled_logo_height,
+                                  0);
 
                 al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (Y * (250.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "JUGAR");
                 al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (Y * (325.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "REGLAS");
