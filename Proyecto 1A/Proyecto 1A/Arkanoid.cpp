@@ -12,6 +12,9 @@ using namespace std;
 #pragma warning(disable:4996);
 #define FPS 60.0
 
+int alturaescalada = 1080;
+int anchoescalado = 1920;
+
 void main()
 {
     if (!al_init()) {
@@ -96,16 +99,48 @@ void main()
 
         if (eventos.type == ALLEGRO_EVENT_TIMER) {
             if (eventos.timer.source == timer) {
+
+                int X = al_get_display_width(pantalla);
+                int Y = al_get_display_height(pantalla);
+
                 al_clear_to_color(al_map_rgb(0, 0, 0));
 
-                float scale = 1.3;
-                int ancho = al_get_bitmap_width(Logo) * scale;
-                int alto = al_get_bitmap_height(Logo) * scale;
-                int logoX = (X - ancho) / 2;
-                int logoY = Y / 15;
+                al_draw_scaled_bitmap(Fondo, 0, 0, anchoescalado, alturaescalada, 0, 0, RX, RY, 0);
 
-                al_draw_bitmap(Fondo, 0, 0, 0);
-                al_draw_scaled_bitmap(Logo, 0, 0, al_get_bitmap_width(Logo), al_get_bitmap_height(Logo), logoX, logoY, ancho, alto, 0);
+                // Obtener dimensiones originales del logo
+                int logo_width = al_get_bitmap_width(Logo);
+                int logo_height = al_get_bitmap_height(Logo);
+
+                // Definir un tamaño máximo para el logo (por ejemplo, 30% del ancho y altura de la pantalla)
+                float max_scale_factor = 0.3; // Porcentaje máximo del tamaño de la pantalla
+                float max_logo_width = X * max_scale_factor;
+                float max_logo_height = Y * max_scale_factor;
+
+                // Calcular factor de escala basado en las dimensiones máximas permitidas
+                float scale_factor_x = max_logo_width / logo_width;
+                float scale_factor_y = max_logo_height / logo_height;
+
+                // Usar el menor factor para mantener la proporción
+                float scale_factor = min(scale_factor_x, scale_factor_y);
+
+                // Calcular dimensiones escaladas del logo
+                int scaled_logo_width = (int)(logo_width * scale_factor);
+                int scaled_logo_height = (int)(logo_height * scale_factor);
+
+                // Posicionar el logo centrado en la pantalla
+                int logoX = (X - scaled_logo_width) / 2;
+                int logoY = (Y - scaled_logo_height) / 15; // Puedes ajustar esta posición verticalmente
+
+                // Dibujar el logo escalado manteniendo su proporción
+                al_draw_scaled_bitmap(Logo,
+                    0, 0,
+                    logo_width,
+                    logo_height,
+                    logoX,
+                    logoY,
+                    scaled_logo_width,
+                    scaled_logo_height,
+                    0);
 
                 al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (Y * (250.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "JUGAR");
                 al_draw_text(font, al_map_rgb(255, 255, 255), X / 2, (Y * (325.0 / 720.0)), ALLEGRO_ALIGN_CENTER, "REGLAS");
