@@ -345,6 +345,25 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
         bloqueActual = bloqueActual->Siguiente; // Avanzar al siguiente bloque
     }
 
+    if (jugador.estado) {
+        // Calcular las posiciones de la hitbox de la nave
+        float naveIzquierda = jugador.x + centroX;
+        float naveDerecha = naveIzquierda + NAVE_ANCHO;
+        float naveSuperior = jugador.y + centroY;
+        float naveInferior = naveSuperior + NAVE_ALTO;
+
+        // Verificar si la bola está en la hitbox de la nave
+        if (balin->x + radioBola >= naveIzquierda &&
+            balin->x - radioBola <= naveDerecha &&
+            balin->y + radioBola >= naveSuperior &&
+            balin->y - radioBola <= naveInferior) {
+
+            // Colisión detectada, manejar interacción
+            balin->velocidadY = -balin->velocidadY; // Cambiar dirección vertical
+            balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustar posición para evitar el "pegado"
+        }
+    }
+
     // Actualizar posición de la bola
     balin->x += balin->velocidadX;
     balin->y += balin->velocidadY;

@@ -286,30 +286,7 @@ int arkanoid(int nivel, int vidas) {
                 al_draw_circle(bola->x, bola->y, bola->radio, al_map_rgb(255, 0, 0), 1); // Contorno rojo para la hitbox
             }
 
-            if (bola->estado && jugador.estado) {
-                // Calcular las posiciones de la hitbox de la nave
-                float naveIzquierda = jugador.x + centroX;
-                float naveDerecha = naveIzquierda + NAVE_ANCHO;
-                float naveSuperior = jugador.y + centroY;
-                float naveInferior = naveSuperior + NAVE_ALTO;
-
-                // Verificar si la bola está en la hitbox de la nave
-                if (bola->x + bola->radio > naveIzquierda && bola->x - bola->radio < naveDerecha &&
-                    bola->y + bola->radio > naveSuperior && bola->y - bola->radio < naveInferior) {
-
-                    // Determinar la dirección del rebote
-                    if (bola->y + bola->radio >= naveSuperior && bola->y - bola->radio <= naveInferior) {
-                        // Rebote horizontal
-                        bola->velocidadY = -bola->velocidadY; // Rebote hacia arriba
-                        bola->y = naveSuperior - bola->radio; // Ajustar la posición para no quedar atrapada
-                    }
-                    else if (bola->x + bola->radio >= naveIzquierda && bola->x - bola->radio <= naveDerecha) {
-                        // Rebote vertical
-                        bola->velocidadX = -bola->velocidadX; // Rebote hacia los lados
-                        bola->x = (bola->x < naveIzquierda) ? naveIzquierda - bola->radio : naveDerecha + bola->radio; // Ajustar la posición
-                    }
-                }
-            }
+            
 
 
     
