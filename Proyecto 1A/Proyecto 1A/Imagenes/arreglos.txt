@@ -1,0 +1,6 @@
+-Rebote nave con enemigos (bajar puntos)
+-Animacion destruccion.
+-Sonido.
+-Resultados.
+-Bala.
+-Al iniciar, que el juego no empiece hasta que muevas la nave.

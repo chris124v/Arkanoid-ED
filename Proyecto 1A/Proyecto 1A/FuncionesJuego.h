@@ -69,6 +69,7 @@ typedef struct bloque {
     float y;         // Posicion en el eje y
     bool estado;     // Estado del bloque para ver si se elimino
     int resistencia; // Nivel de resistencia del bloque
+    ALLEGRO_BITMAP* imagen;
     bloque* Siguiente; // Puntero al siguiente bloque en la lista
 
 }*Ptrbloque;
@@ -104,6 +105,7 @@ void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
     bloques->estado = true; //Inicialmente el bloque esta activo o vivo
     bloques->resistencia = rand() % 5 + 1; // Asignar un nivel de resistencia aleatorio entre 1 y 5
     bloques->Siguiente = NULL; //Establecemos el null de la lista enlazada
+    bloques->imagen = nullptr;
 }
 
 //Funcion de inicializar el enemigo 
@@ -270,6 +272,8 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) 
         else {
             delete nuevoBloque;  // Libera memoria de los bloques inactivos
         }
+
+        
     }
 }
 

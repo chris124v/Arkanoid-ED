@@ -16,6 +16,7 @@ Enemigos Eliminados: 3
 Bloques Eliminados: 29
 
 
+<<<<<<< HEAD
 Nombre:Chris2
 Puntaje: 2
 Enemigos Eliminados: 3
@@ -32,5 +33,9 @@ Nombre:Chris
 Puntaje: 2
 Enemigos Eliminados: 3
 Bloques Eliminados: 2
+=======
+Nombre:dlajk
+Puntaje: 800
+>>>>>>> asdasdasd
 
 
