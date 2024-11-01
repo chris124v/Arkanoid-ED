@@ -59,6 +59,9 @@ int arkanoid(int nivel, int vidas) {
     ALLEGRO_BITMAP* nave2 = al_load_bitmap("Imagenes/Nave_2.png");
     ALLEGRO_BITMAP* fondo2 = al_load_bitmap("Imagenes/fondo_main.jpg");
     ALLEGRO_BITMAP* bolas = al_load_bitmap("Imagenes/Bola.png");
+    ALLEGRO_BITMAP* enemigo1 = al_load_bitmap("Imagenes/Enemigo1.png");
+    ALLEGRO_BITMAP* enemigo2 = al_load_bitmap("Imagenes/Enemigo2.png");
+    ALLEGRO_BITMAP* enemigo3 = al_load_bitmap("Imagenes/Enemigo3.png");
 
     //Mensaje en caso de que no se puedan cargar las imagenes
     if (!bloque || !fondo || !nave2 ) {
@@ -208,7 +211,7 @@ int arkanoid(int nivel, int vidas) {
 
             // Baja la probabilidad de aparicion de enemigos al 2%
             if (enemigos_genera < enem_nivel && rand() % 100 < proba_enem) {
-                generar_enemigos(enemigos, 2, nivel, bloques, ResY - 300, centroY, centroX);
+                generar_enemigos(enemigos, 4, nivel, bloques, ResY - 300, centroY, centroX);
                 enemigos_genera++; //Se incrementan los enemigos por 1 en cada nivel
             }
 
@@ -288,8 +291,51 @@ int arkanoid(int nivel, int vidas) {
                         Aux_enem->velocidadY = -Aux_enem->velocidadY; //Alternamos la velocidad vertical
                     }
 
-                    // Enemigo en amarillo
-                    al_draw_filled_circle(Aux_enem->x, Aux_enem->y, diametro / 2, al_map_rgb(255, 255, 0));
+                    //Construimos un bitmap de la imagen del enemigo esto para las imagenes y sus variaciones
+                    ALLEGRO_BITMAP* imagen_enem = NULL;
+
+                    // Seleccionar la imagen basada en el tipo de enemigo
+                    switch (Aux_enem->tipo) {
+
+                    case 0:
+                        imagen_enem = enemigo1;
+                        break;
+                    case 1:
+                        imagen_enem = enemigo2;
+                        break;
+                    case 2:
+                        imagen_enem = enemigo3;
+                        break;
+
+                    //Caso de error
+                    default:
+                        std::cerr << "Error: Tipo de enemigo desconocido." << std::endl;
+                        break;
+                    }
+
+                    // Si la imagen correspondiente no esta definida, saltar este enemigo
+                    if (!imagen_enem) {
+                        Aux_enem = Aux_enem->Siguiente;
+                        continue;
+                    }
+
+                    // Verificar las dimensiones de la imagen
+                    int ancho_e = al_get_bitmap_width(imagen_enem);
+                    int alto_e = al_get_bitmap_height(imagen_enem);
+
+                    //Validacion en caso de imagen erronea
+                    if (ancho_e <= 0 || alto_e <= 0) {
+                        std::cerr << "Error: Dimensiones de la imagen de enemigo no válidas." << std::endl;
+                        Aux_enem = Aux_enem->Siguiente;
+                        continue;
+                    }
+
+                    // Escala de un 50 por ciento
+                    float tam = 1.5;
+                    float escala = (diametro * tam) / ancho_e;
+
+                    // Dibujamos la imagen escalada segun corresponda
+                    al_draw_scaled_bitmap(imagen_enem, 0, 0, ancho_e, alto_e, Aux_enem->x - ((diametro * tam) / 2),  Aux_enem->y - ((diametro * tam) / 2),  ancho_e* escala, alto_e* escala, 0);
 
                 }
                 

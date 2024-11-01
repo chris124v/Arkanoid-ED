@@ -110,3 +110,7 @@ Nombre:Chrios
 Puntaje: 1520
 
 
+Nombre:Chris
+Puntaje: 180
+
+

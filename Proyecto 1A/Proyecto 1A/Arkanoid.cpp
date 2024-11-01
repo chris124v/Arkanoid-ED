@@ -86,6 +86,7 @@ void main()
     //Establecemos dos tipos de fuentes de texto con diferentes tamanos 
     ALLEGRO_FONT* font = al_load_ttf_font("Video-Font.ttf", 40, NULL);
     ALLEGRO_FONT* font2 = al_load_ttf_font("Video-Font.ttf", 25, NULL);
+    ALLEGRO_FONT* font3 = al_load_ttf_font("Video-Font.ttf", 20, NULL);
 
     //Limpiamos la pantalla
     al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -217,6 +218,98 @@ void main()
 
                     //Hecho ahora como false si se sale 
                     hecho = false;
+                }
+            }
+        }
+
+        //Aqui hacemos lo mismo con instrucciones en caso de que se quiera ver las instrucciones de otros jugadores
+        if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (Y * 330.0 / 720.0) && mousey <= (Y * 390.0 / 720.0))) {
+
+            //Cambiamos el color a cyan
+            al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (Y * (325.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "REGLAS");
+
+            //Si se presiona salir creacion pasa a ser false saliendo de la interfaz
+            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                if (eventos.mouse.button & 1) {
+
+
+                    bool salir = false;
+
+                    //Aqui el ciclo se seguira cumpliendo
+                    while (!salir) {
+
+                        al_wait_for_event(cola_eventos, &eventos);
+                        if (eventos.type == ALLEGRO_EVENT_TIMER) {
+                            
+                                //Se dibujan todos los bitmaps, las instrucciones y títulos
+                                al_clear_to_color(al_map_rgb(0, 0, 0));
+                                al_draw_scaled_bitmap(Fondo, 0, 0, anchoescalado, alturaescalada, 0, 0, RX, RY, 0);
+                                al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (120.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Arkanoid");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY * (170.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Instrucciones");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY* (260.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "En el juego arkanoid tienes un total de 3 vidas disponibles usalas con sabiduria.");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY* (310.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Avanzas si logras destruir todos los bloques de un nivel, hay un total de 10 niveles disponibles.");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY* (360.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Mueres si pierdes todas tus vidas esto se da solo si la bola cruza el limite inferior.");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY* (410.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Utiliza las flechas para mover la nave (barra) <- y ->");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY* (460.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "PuntosxNivel= 100, PuntosxEnemigo = 10, PuntosxBloque = 5");
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2, (RY * (570.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Atras");
+                            
+                        }
+
+                        //Aqui se realiza el evento que determina la posicion del mouse y se activa cuando el mismo se mueve
+                        if (eventos.type == ALLEGRO_EVENT_MOUSE_AXES)
+                        {
+                            mousex = eventos.mouse.x;
+                            mousey = eventos.mouse.y;
+                        }
+
+                        //En este caso basandose en la posicion del rectangulo de la opcion atras hace la comparacion
+                        if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (RY * (570.0 / 768.0)) && mousey <= (RY * (620.0 / 768.0)))) {
+                            
+                            //Se subraya el texto con el color cyan
+                            al_draw_text(font2, al_map_rgb(0, 255, 255), X / 2, (Y* (570.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Atras");
+
+                            //Si se presiona atras sale al menú principal
+                            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+                            {
+                                //Esto basicamente lo que indica es que como salir antes era false se invalida el ciclo while
+                                if (eventos.mouse.button & 1) {
+                                    salir = true;
+                                }
+                            }
+                        }
+
+                        //Esto tambien en caso que se quiera salir con escape en lugar de salir
+                        if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
+
+                            //Se hace el switch con el teclado 
+                            switch (eventos.keyboard.keycode) {
+
+                                //Si se usa escape se sale de juego
+                            case ALLEGRO_KEY_ESCAPE:
+
+                                creacion = false;
+                            }
+                        }
+
+                        //Mediante flip display lo que se logra es hacer el cambio al menu principal con el 
+                        al_flip_display();
+                    }
+
+                }
+            }
+        }
+
+
+        //Aqui hacemos lo mismo con resultados en caso de que se quiera ver los resultados de otros jugadores
+        if ((mousex >= X / 2 - 42 && mousex <= X / 2 + 42) && (mousey >= (Y * 395.0 / 720.0) && mousey <= (Y * 450.0 / 720.0))) {
+
+            //Cambiamos el color a cyan
+            al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (Y * (390.0 / 720.0)), ALLEGRO_ALIGN_CENTRE, "RESULTADOS");
+
+            //Si se presiona salir creacion pasa a ser false saliendo de la interfaz
+            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+                if (eventos.mouse.button & 1) {
+                    
                 }
             }
         }

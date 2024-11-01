@@ -453,8 +453,10 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                 // Desactivar el enemigo o eliminarlo
                 enemigoActual->estado = false;
 
-                //Por cada enemigo eliminado se suman 10 puntos
-                puntos += 10;
+                if (enemigoActual->estado = false) {
+                    //Por cada enemigo eliminado se suman 10 puntos
+                    puntos += 10;
+                }
 
                 // Determinar desde que direccion vino la colision
                 float cayoX = balin->x - enemigoActual->x;
@@ -510,7 +512,7 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque b
         Ptrenemigo nuevoEnemigo = new enemigo;
 
         // Seleccion aleatoria del tipo de enemigo (0 = Adherido, 1 = Rebote, 2 = Lineal)
-        int tipo = rand() % 3; 
+        int tipo = rand() % 4; 
 
         //Llamamos a inicializar enemigo
         inicializar_enemigo(nuevoEnemigo, i, tipo, ResX);
@@ -528,23 +530,25 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque b
         // Configurar el movimiento basado en el tipo de enemigo mediante 
 
         switch (tipo) {
-        
-        //Caso adherido
-        case 0: 
-            nuevoEnemigo->velocidadX = 2; // Velocidad baja en x
-            nuevoEnemigo->velocidadY = 2; // Velocidad baja en y
-            break;
-        
-        // Caso rebote
-        case 1: 
-            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en x
-            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en y
+
+        case 0: // Izquierda y derecha
+            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Establecemos velocidad ranodm en x
+            nuevoEnemigo->velocidadY = 0; //No hay movimiento en y
             break;
 
-        //Caso lineal
-        case 2: 
-            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Solo en x o solo en y
-            nuevoEnemigo->velocidadY = (nuevoEnemigo->velocidadX == 0 ? 2 : 0);
+        case 1: // Rebote
+            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en ambos casos
+            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); 
+            break;
+
+        case 2: // Movimiento en ambas direcciones
+            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en ambos casos
+            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); 
+            break;
+
+        case 3: // Arriba y abajo
+            nuevoEnemigo->velocidadX = 0; // No permite movimiento en X
+            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); 
             break;
         }
 
