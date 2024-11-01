@@ -54,10 +54,16 @@ int arkanoid(int nivel, int vidas) {
     }
 
     //Aqui cargamos la imagenes del juego
-    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Celeste_1.png");
+    ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Gris.png");
+    ALLEGRO_BITMAP* bloque2 = al_load_bitmap("Imagenes/Verde.png");
+    ALLEGRO_BITMAP* bloque3 = al_load_bitmap("Imagenes/Naranja.png");
+    ALLEGRO_BITMAP* bloque4 = al_load_bitmap("Imagenes/Rojo.png");
+    ALLEGRO_BITMAP* bloque5 = al_load_bitmap("Imagenes/Azul.png");
+    ALLEGRO_BITMAP* bloque6 = al_load_bitmap("Imagenes/Amarillo.png");
+    ALLEGRO_BITMAP* bloque7 = al_load_bitmap("Imagenes/Celeste.png");
     ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo_juego.png");
     ALLEGRO_BITMAP* nave2 = al_load_bitmap("Imagenes/Nave_2.png");
-    ALLEGRO_BITMAP* fondo2 = al_load_bitmap("Imagenes/fondo_main.jpg");
+    ALLEGRO_BITMAP* fondos = al_load_bitmap("Imagenes/fondo_main.jpg");
     ALLEGRO_BITMAP* bolas = al_load_bitmap("Imagenes/Bola.png");
     ALLEGRO_BITMAP* enemigo1 = al_load_bitmap("Imagenes/Enemigo1.png");
     ALLEGRO_BITMAP* enemigo2 = al_load_bitmap("Imagenes/Enemigo2.png");
@@ -65,7 +71,19 @@ int arkanoid(int nivel, int vidas) {
 
     //Mensaje en caso de que no se puedan cargar las imagenes
     if (!bloque || !fondo || !nave2 ) {
-        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o más imágenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return 0;
+    }
+
+    //Mensaje en caso de que no se puedan cargar las imagenes
+    if (!fondos || !bolas || !enemigo1) {
+        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        return 0;
+    }
+
+    //Mensaje en caso de que no se puedan cargar las imagenes
+    if (!enemigo2 || !enemigo3 ) {
+        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
 
@@ -136,10 +154,7 @@ int arkanoid(int nivel, int vidas) {
             //Subimos el nivel
             nivel++;
 
-            //Subimos los enemigos por cada nivel
-            if (enem_nivel > 5) {
-                enem_nivel++;
-            }
+            enem_nivel++;
 
             // Resetea el contador de enemigos generados para el nuevo nivel
             enemigos_genera = 0;
@@ -160,6 +175,12 @@ int arkanoid(int nivel, int vidas) {
 
             // Generación de nueva formacion de bloques y suma de puntos
             formacion_bloques(bloques, nivel, bloque);
+
+            // Reposicionar la bola al inicio del nuevo nivel
+            bola->x = jugador.x + centroX;
+            bola->y = jugador.y + centroY - 10;
+            bola->velocidadY = -fabs(bola->velocidadY); // Asegura que la bola vaya hacia arriba
+
 
             //Suma de puntos de 100 por cada nivel
             puntos += 100;
@@ -249,7 +270,7 @@ int arkanoid(int nivel, int vidas) {
             al_clear_to_color(al_map_rgb(0, 0, 0));
 
             //Dibujamos el fondo de estrellas
-            al_draw_bitmap(fondo2, 0, 0, 0);
+            al_draw_bitmap(fondos, 0, 0, 0);
 
             // Dibujar fondo centrado sin cambiar su proporcion vertical
             al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
@@ -257,20 +278,41 @@ int arkanoid(int nivel, int vidas) {
             //Establecemos la lista enlazada de bloques
             Ptrbloque bloquesss = bloques;
 
-            //Recorre todos los bloques
+            // Bitmaps de todos los bloques
+            ALLEGRO_BITMAP* hileras[7] = { bloque, bloque2, bloque3, bloque4, bloque5, bloque6, bloque7 };
+
+            // Factor de escala para ajustar el tamano de los bloques
+            float factorEscala = 1.15;  
+
+            // Recorre todos los bloques
+            int bloqueIndex = 0; // Para contar la posición de cada bloque
+            int bloquesPorFila = 8; // Numero de bloques por cada fila
+
+            //Mientras no se llegue al final
             while (bloquesss != NULL) {
 
-                //Si esta activo
+                // Si el bloque esta activo
                 if (bloquesss->estado) {
 
-                    //Dibujamos los bloques con los factores de posicion
-                    al_draw_scaled_bitmap( bloque, 0, 0, al_get_bitmap_width(bloque), al_get_bitmap_height(bloque), bloquesss->x + centroX, bloquesss->y + centroY, al_get_bitmap_width(bloque) / 2, al_get_bitmap_height(bloque) / 2, 0 );
+                    // Determinar la hilera actual usando bloqueIndex y bloquesPorFila
+                    int hilera = bloqueIndex / bloquesPorFila;
 
+                    // Selecciona la imagen correspondiente a la hilera
+                    ALLEGRO_BITMAP* bloqueActual = hileras[hilera];
+
+                    // Verificar las dimensiones de la imagen
+                    int ancho_e = al_get_bitmap_width(bloqueActual);
+                    int alto_e = al_get_bitmap_height(bloqueActual);
+
+                    // Dibujar el bloque escalado con el factor de escala ajustado
+                    al_draw_scaled_bitmap(bloqueActual, 0, 0, ancho_e, alto_e, bloquesss->x + centroX, bloquesss->y + centroY, ancho_e * factorEscala, alto_e * factorEscala, 0);
                 }
 
-                //Seguimos recorriendo la lista enlazada de los bloques
+                // Avanza al siguiente bloque en la lista
                 bloquesss = bloquesss->Siguiente;
+                bloqueIndex++; // Incrementa el índice para llevar el seguimiento de la posición
             }
+
 
             //Aqui iniciamos la lista con los enemigos
             Ptrenemigo Aux_enem = enemigos;
@@ -307,10 +349,6 @@ int arkanoid(int nivel, int vidas) {
                         imagen_enem = enemigo3;
                         break;
 
-                    //Caso de error
-                    default:
-                        std::cerr << "Error: Tipo de enemigo desconocido." << std::endl;
-                        break;
                     }
 
                     // Si la imagen correspondiente no esta definida, saltar este enemigo
@@ -492,7 +530,6 @@ int arkanoid(int nivel, int vidas) {
                     al_flip_display();
                 }
             }
-
             
         }
     }

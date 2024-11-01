@@ -138,7 +138,7 @@ void dibujar_nave(nave& jugador, ALLEGRO_BITMAP* nave_bitmap, int centroX, int c
 void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) {
 
     //Constantes para escalar los bloques y hacer la generacion
-    const float escalar_b = 0.5;
+    const float escalar_b = 1.15;
     const int ancho_b = al_get_bitmap_width(bloques2) * escalar_b;
     const int alto_b = al_get_bitmap_height(bloques2) * escalar_b;
     const int bloques_filas = 8; //Bloques por cada fila
@@ -284,7 +284,7 @@ void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
     bola->y = jugador.y - 100; 
 
     //Este seria el radio de la bola
-    bola->radio = 7; 
+    bola->radio = 10; 
 
     //Finalmente estarian velocidades aleatorias para cada pasada del juego
     bola->velocidadX = rand() % 2 + 1;
@@ -298,8 +298,8 @@ void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
 void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos) {
 
     // Este seria el estandar del tamano del bloque para la hitbox de colision
-    const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
-    const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
+    const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) * 1.15;
+    const int altoBloqueEscalado = al_get_bitmap_height(bloques2) * 1.15;
 
     // Radio de la bola
     const int radioBola = balin->radio;
@@ -367,10 +367,12 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                     //El bloque con el que pego desaparece
                     bloqueActual->estado = false; 
 
+                    //Por cada bloque eliminado se suma 5 a la puntuacion general
+                    puntos += 5;
+
                 }
 
-                //Por cada bloque eliminado se suma 5 a la puntuacion general
-                puntos += 5;
+                
 
                 // Rebote de la bola al chocar con el bloque segun las dimensiones
                 float choqueX = (balin->x + radioBola) - (bloqueActual->x + centroX);
@@ -453,10 +455,8 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                 // Desactivar el enemigo o eliminarlo
                 enemigoActual->estado = false;
 
-                if (enemigoActual->estado = false) {
-                    //Por cada enemigo eliminado se suman 10 puntos
-                    puntos += 10;
-                }
+                //Por cada enemigo eliminado se suman 10 puntos
+                puntos += 10;
 
                 // Determinar desde que direccion vino la colision
                 float cayoX = balin->x - enemigoActual->x;

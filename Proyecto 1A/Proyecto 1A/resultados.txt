@@ -114,3 +114,23 @@ Nombre:Chris
 Puntaje: 180
 
 
+Nombre:QUE
+Puntaje: 1125
+
+
+Nombre:Chris
+Puntaje: 870
+
+
+Nombre:Chris
+Puntaje: 1620
+
+
+Nombre:Chris
+Puntaje: 160
+
+
+Nombre:Chris
+Puntaje: 175
+
+
