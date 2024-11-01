@@ -63,6 +63,7 @@ int arkanoid(int nivel, int vidas) {
     ALLEGRO_BITMAP* bloque6 = al_load_bitmap("Imagenes/Amarillo.png");
     ALLEGRO_BITMAP* bloque7 = al_load_bitmap("Imagenes/Celeste.png");
     ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo_juego.png");
+    ALLEGRO_BITMAP* fondorep = al_load_bitmap("Imagenes/replica.png");
     ALLEGRO_BITMAP* nave2 = al_load_bitmap("Imagenes/Nave_2.png");
     ALLEGRO_BITMAP* fondos = al_load_bitmap("Imagenes/fondo_main.jpg");
     ALLEGRO_BITMAP* bolas = al_load_bitmap("Imagenes/Bola.png");
@@ -87,7 +88,8 @@ int arkanoid(int nivel, int vidas) {
         al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
-
+    
+    
     //Establecemos las direcciones de la nave
     enum Direccion { NINGUNA, IZQUIERDA, DERECHA };
     enum Direccion Dir = NINGUNA; //Definimos una direccion para que no se mueva
@@ -104,6 +106,7 @@ int arkanoid(int nivel, int vidas) {
 
     //Establecemos las variables del juegp
     bool hecho = true;
+    bool juego_in = false;
     int puntos = 0;
     int bloques_elim = 0;
     int enemigos_elim = 0;
@@ -221,11 +224,17 @@ int arkanoid(int nivel, int vidas) {
             //Si se presiona la tecla izquierda la nave va a la izquierda
             case ALLEGRO_KEY_LEFT:
                 Dir = IZQUIERDA;
+                if (!juego_in) {
+                    juego_in = true;  // Inicia el juego al primer movimiento
+                }
                 break;
             
             //Si se presiona la tecla derecha se va a la derecha
             case ALLEGRO_KEY_RIGHT:
                 Dir = DERECHA;
+                if (!juego_in) {
+                    juego_in = true;  // Inicia el juego al primer movimiento
+                }
                 break;
             }
         }
@@ -249,318 +258,331 @@ int arkanoid(int nivel, int vidas) {
         //Aqui iniciamos los eventos del timer
         if (eventos.type == ALLEGRO_EVENT_TIMER) {
 
-            // Baja la probabilidad de aparicion de enemigos al 2%
-            if (enemigos_genera < enem_nivel && rand() % 100 < proba_enem) {
-                generar_enemigos(enemigos, 4, nivel, bloques, ResY - 300, centroY, centroX);
-                enemigos_genera++; //Se incrementan los enemigos por 1 en cada nivel
+            //Aqui utilizamos la variable juego in para si el juego no se ha iniciado o no se ha movido la nave no aparezca nada
+            if (!juego_in) {
+                al_flip_display();
+                
+                //Aqui imprimimos una imagen
+                al_draw_scaled_bitmap(fondorep, 0, 0, al_get_bitmap_width(fondorep), al_get_bitmap_height(fondorep), 0, 0,  pantallaAncho, pantallaAlto, 0); 
             }
 
-            //Llamamos la funcion de mover los enemigos en el area del juego
-            mover_enemigos(enemigos, bloques, centroX, centroY, bloque);
+            //Cuando si se mueve la nave se inicializa el juego
+            else {
+                // Baja la probabilidad de aparicion de enemigos al 2%
+                if (enemigos_genera < enem_nivel && rand() % 100 < proba_enem) {
+                    generar_enemigos(enemigos, 4, nivel, bloques, ResY - 300, centroY, centroX);
+                    enemigos_genera++; //Se incrementan los enemigos por 1 en cada nivel
+                }
+
+                //Llamamos la funcion de mover los enemigos en el area del juego
+                mover_enemigos(enemigos, bloques, centroX, centroY, bloque, jugador, puntos);
 
 
-      
-            // Movimiento del jugador
-            switch (Dir) {
 
-            case IZQUIERDA:
-                if (jugador.x >= centroX - RX / 2 - 120) // Limite izquierdo
-                    jugador.x -= jugador.velocidadX;
-                break;
+                // Movimiento del jugador
+                switch (Dir) {
 
-            case DERECHA:
-                if (jugador.x <= centroX + RX / 2 - 300) // Limite derecho
-                    jugador.x += jugador.velocidadX;
-                break;
-            }
+                case IZQUIERDA:
+                    if (jugador.x >= centroX - RX / 2 - 120) // Limite izquierdo
+                        jugador.x -= jugador.velocidadX;
+                    break;
 
-            //Esto es en caso de que se presione escape para salir del juego
-            if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
-                switch (eventos.keyboard.keycode) {
-                case ALLEGRO_KEY_ESCAPE:
+                case DERECHA:
+                    if (jugador.x <= centroX + RX / 2 - 300) // Limite derecho
+                        jugador.x += jugador.velocidadX;
+                    break;
+                }
+
+                //Esto es en caso de que se presione escape para salir del juego
+                if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
+                    switch (eventos.keyboard.keycode) {
+                    case ALLEGRO_KEY_ESCAPE:
+                        hecho = false;
+                    }
+                }
+
+                //Flip display para actualizar frames
+                al_flip_display();
+
+                //Cambiamos todo a color negro
+                al_clear_to_color(al_map_rgb(0, 0, 0));
+
+                //Dibujamos el fondo de estrellas
+                al_draw_bitmap(fondos, 0, 0, 0);
+
+                // Dibujar fondo centrado sin cambiar su proporcion vertical
+                al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
+
+                //Inicialiamos la lista enlazada de bloques
+                Ptrbloque bloquesss = bloques;
+
+                //Llamamos a todos los bitmaps para las hileras de bloques
+                ALLEGRO_BITMAP* hileras[7] = { bloque, bloque2, bloque3, bloque4, bloque5, bloque6, bloque7 };
+
+                // Factor de escala para el tamano real de los bloques
+                float factorEscala = 1.15;
+                int bloquesPorFila = 8; // Numero de bloques por cada fila
+                int alto_b = al_get_bitmap_height(bloque) * factorEscala; // Altura escalada de cada bloque
+
+                // Recorre todos los bloques y dibuja cada uno
+                while (bloquesss != NULL) {
+                    if (bloquesss->estado) {
+                        // Calcular la fila del bloque usando la posición y su altura
+                        int fila = (bloquesss->y - 100) / alto_b;  // Suponiendo que la posición inicial en y es 100
+                        int hilera = fila % 7;  // Ciclo entre las 7 hileras de imágenes
+
+                        // Selecciona la imagen correspondiente a la hilera
+                        ALLEGRO_BITMAP* bloqueActual = hileras[hilera];
+
+                        // Dibujar el bloque escalado con el factor de escala ajustado
+                        al_draw_scaled_bitmap(bloqueActual, 0, 0, al_get_bitmap_width(bloqueActual), al_get_bitmap_height(bloqueActual), bloquesss->x + centroX, bloquesss->y + centroY, al_get_bitmap_width(bloqueActual) * factorEscala, al_get_bitmap_height(bloqueActual) * factorEscala, 0);
+                    }
+
+                    // Avanza al siguiente bloque en la lista
+                    bloquesss = bloquesss->Siguiente;
+                }
+
+
+                //Aqui iniciamos la lista con los enemigos
+                Ptrenemigo Aux_enem = enemigos;
+
+                //Recorremos toda la lista con el auxiliar
+                while (Aux_enem != NULL) {
+
+                    //Si el enemigo es true osea esta activo
+                    if (Aux_enem->estado) {
+
+                        // Rebote en los bordes laterales del juego, subimos un poco el borde para que sea realista
+                        if (Aux_enem->x < centroX + diametro + 15 || Aux_enem->x > centroX + RX - diametro - 20) {
+                            Aux_enem->velocidadX = -Aux_enem->velocidadX; //Invertimos la velocidad
+                        }
+
+                        //Aqui en el caso del borde superior
+                        if (Aux_enem->y < centroY + diametro + 15 || Aux_enem->y > centroY + RY) {
+                            Aux_enem->velocidadY = -Aux_enem->velocidadY; //Alternamos la velocidad vertical
+                        }
+
+                        //Construimos un bitmap de la imagen del enemigo esto para las imagenes y sus variaciones
+                        ALLEGRO_BITMAP* imagen_enem = NULL;
+
+                        // Seleccionar la imagen basada en el tipo de enemigo
+                        switch (Aux_enem->tipo) {
+
+                        case 0:
+                            imagen_enem = enemigo1;
+                            break;
+                        case 1:
+                            imagen_enem = enemigo2;
+                            break;
+                        case 2:
+                            imagen_enem = enemigo3;
+                            break;
+
+                        }
+
+                        // Si la imagen correspondiente no esta definida, saltar este enemigo
+                        if (!imagen_enem) {
+                            Aux_enem = Aux_enem->Siguiente;
+                            continue;
+                        }
+
+                        // Verificar las dimensiones de la imagen
+                        int ancho_e = al_get_bitmap_width(imagen_enem);
+                        int alto_e = al_get_bitmap_height(imagen_enem);
+
+                        //Validacion en caso de imagen erronea
+                        if (ancho_e <= 0 || alto_e <= 0) {
+                            std::cerr << "Error: Dimensiones de la imagen de enemigo no válidas." << std::endl;
+                            Aux_enem = Aux_enem->Siguiente;
+                            continue;
+                        }
+
+                        // Escala de un 50 por ciento
+                        float tam = 1.5;
+                        float escala = (diametro * tam) / ancho_e;
+
+                        // Dibujamos la imagen escalada segun corresponda
+                        al_draw_scaled_bitmap(imagen_enem, 0, 0, ancho_e, alto_e, Aux_enem->x - ((diametro * tam) / 2), Aux_enem->y - ((diametro * tam) / 2), ancho_e * escala, alto_e * escala, 0);
+
+                    }
+
+                    //Seguimos recorriendo la lista enlazada para cada enemigo
+                    Aux_enem = Aux_enem->Siguiente;
+
+
+                }
+
+                // Llamamos a la funcion de colision con la bola
+                colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos, bloques_elim, enemigos_elim);
+
+
+
+                // Verifica si la bola est activa
+
+                if (bola->estado) {
+
+                    // Rebote en los bordes laterales
+                    if (bola->x - bola->radio < centroX + 25) { // Limite izquierdo
+                        bola->x = centroX + bola->radio + 25; // Ajustar la posicion 
+                        bola->velocidadX = -bola->velocidadX; // Rebote en el borde izquierdo
+                    }
+                    else if (bola->x + bola->radio > centroX + RX - 25) { // Limite derecho
+                        bola->x = centroX + RX - bola->radio - 25; // Ajustar la posicion 
+                        bola->velocidadX = -bola->velocidadX; // Rebote en el borde derecho
+                    }
+
+                    if (bola->y - bola->radio < centroY + 30) { // Limite superior
+                        bola->y = centroY + bola->radio + 30; // Ajustar la posicion para no salir
+                        bola->velocidadY = -bola->velocidadY; // Rebote en el borde superior
+                    }
+
+                    else if (bola->y + bola->radio > centroY + RY) { // Limite inferior
+                        vidas--; // Resta una vida si la bola sale por el borde inferior
+                        bola->x = jugador.x + centroX; // Reposiciona la bola en la zona centrada
+                        bola->y = jugador.y + centroY - 10; // Reposiciona por encima de la nave
+                        bola->velocidadY = -fabs(bola->velocidadY); // Rebote hacia arriba
+                    }
+
+
+                    // Actualizar la posicion de la bola
+                    bola->x += bola->velocidadX;
+                    bola->y += bola->velocidadY;
+
+                    // Escala para ajustar el radio
+                    float escala = (2.0 * bola->radio) / al_get_bitmap_width(bolas);
+
+                    // Dibujar la imagen de la bola centrada 
+                    al_draw_scaled_bitmap(bolas, 0, 0, al_get_bitmap_width(bolas), al_get_bitmap_height(bolas), bola->x - bola->radio, bola->y - bola->radio, al_get_bitmap_width(bolas) * escala, al_get_bitmap_height(bolas) * escala, 0);
+
+
+                }
+
+                //Llamamos a dibujar nave
+                dibujar_nave(jugador, nave2, centroX, centroY);
+
+                // Mostrar estadisticas en la esquina superior derecha de la pantalla completa
+
+                sprintf(buffer, "Puntos: %d", puntos);
+                al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho - 100, 20, ALLEGRO_ALIGN_RIGHT, buffer);
+
+                sprintf(buffer, "Vidas: %d", vidas);
+                al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho - 100, 70, ALLEGRO_ALIGN_RIGHT, buffer);
+
+                sprintf(buffer, "Enemigos Eliminados: %d", enemigos_elim);
+                al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 40, ALLEGRO_ALIGN_LEFT, buffer);
+
+                sprintf(buffer, "Bloques Eliminados: %d", bloques_elim);
+                al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 90, ALLEGRO_ALIGN_LEFT, buffer);
+
+                //En caso de que se llegue a 0 vidas
+                if (vidas <= 0) {
+
+                    // Limpiar pantalla 
+                    al_clear_to_color(al_map_rgb(0, 0, 0));
+                    al_flip_display();
+
+                    // Establecer variables para salir del juego
                     hecho = false;
-                }
-            }
-
-            //Flip display para actualizar frames
-            al_flip_display();
-
-            //Cambiamos todo a color negro
-            al_clear_to_color(al_map_rgb(0, 0, 0));
-
-            //Dibujamos el fondo de estrellas
-            al_draw_bitmap(fondos, 0, 0, 0);
-
-            // Dibujar fondo centrado sin cambiar su proporcion vertical
-            al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
-
-            //Inicialiamos la lista enlazada de bloques
-            Ptrbloque bloquesss = bloques;
-
-            //Llamamos a todos los bitmaps para las hileras de bloques
-            ALLEGRO_BITMAP* hileras[7] = { bloque, bloque2, bloque3, bloque4, bloque5, bloque6, bloque7 };
-
-            // Factor de escala para el tamano real de los bloques
-            float factorEscala = 1.15;
-            int bloquesPorFila = 8; // Numero de bloques por cada fila
-            int alto_b = al_get_bitmap_height(bloque) * factorEscala; // Altura escalada de cada bloque
-
-            // Recorre todos los bloques y dibuja cada uno
-            while (bloquesss != NULL) {
-                if (bloquesss->estado) {
-                    // Calcular la fila del bloque usando la posición y su altura
-                    int fila = (bloquesss->y - 100) / alto_b;  // Suponiendo que la posición inicial en y es 100
-                    int hilera = fila % 7;  // Ciclo entre las 7 hileras de imágenes
-
-                    // Selecciona la imagen correspondiente a la hilera
-                    ALLEGRO_BITMAP* bloqueActual = hileras[hilera];
-
-                    // Dibujar el bloque escalado con el factor de escala ajustado
-                    al_draw_scaled_bitmap(bloqueActual, 0, 0, al_get_bitmap_width(bloqueActual), al_get_bitmap_height(bloqueActual), bloquesss->x + centroX, bloquesss->y + centroY, al_get_bitmap_width(bloqueActual) * factorEscala, al_get_bitmap_height(bloqueActual) * factorEscala, 0);
+                    salida = 1;
                 }
 
-                // Avanza al siguiente bloque en la lista
-                bloquesss = bloquesss->Siguiente;
-            }
+                // En caso de que hecho no se cumpla y salida sea 1
+                if (!hecho && salida == 1) {
 
+                    //Establecemos diversas variables para puntaje y demas
+                    int seguir = true;
+                    char puntaje[60] = "Puntaje: ";
+                    char enemigos_elim2[30] = "Enemigos Eliminados: ";
+                    char bloques_elim2[30] = "Bloques Eliminados: ";
 
-            //Aqui iniciamos la lista con los enemigos
-            Ptrenemigo Aux_enem = enemigos;
+                    sprintf(buffer, "%d", puntos);  // Asegurarse de usar los puntos actuales
+                    strcat_s(puntaje, 60, buffer);
 
-            //Recorremos toda la lista con el auxiliar
-            while (Aux_enem != NULL) {
+                    strcpy(enemigos_elim2, "Enemigos Eliminados: ");  // Reinicia la cadena para evitar duplicados
+                    sprintf(buffer, "%d", enemigos_elim);  // Guarda los enemigos
+                    strcat_s(enemigos_elim2, 30, buffer);
 
-                //Si el enemigo es true osea esta activo
-                if (Aux_enem->estado) {
+                    strcpy(bloques_elim2, "Bloques Eliminados: ");  // Reinicia la cadena para evitar duplicados
+                    sprintf(buffer, "%d", bloques_elim);  // Guarda los bloques
+                    strcat_s(bloques_elim2, 30, buffer);
 
-                    // Rebote en los bordes laterales del juego, subimos un poco el borde para que sea realista
-                    if (Aux_enem->x < centroX + diametro + 15 || Aux_enem->x > centroX + RX - diametro - 20) {
-                        Aux_enem->velocidadX = -Aux_enem->velocidadX; //Invertimos la velocidad
-                    }
+                    //Inicializacion del nombre
+                    char nombre[40] = { '_' };
+                    int pos = 0;
 
-                    //Aqui en el caso del borde superior
-                    if (Aux_enem->y < centroY + diametro + 15 || Aux_enem->y > centroY + RY) {
-                        Aux_enem->velocidadY = -Aux_enem->velocidadY; //Alternamos la velocidad vertical
-                    }
+                    // Limpiar la pantalla antes de entrar al bucle de nombre
+                    al_clear_to_color(al_map_rgb(0, 0, 0));
+                    al_flip_display();
 
-                    //Construimos un bitmap de la imagen del enemigo esto para las imagenes y sus variaciones
-                    ALLEGRO_BITMAP* imagen_enem = NULL;
+                    //Iniciamos el ciclo seguir
+                    while (seguir) {
 
-                    // Seleccionar la imagen basada en el tipo de enemigo
-                    switch (Aux_enem->tipo) {
+                        //Llamamos a los eventos de allegro
+                        ALLEGRO_EVENT evento;
+                        al_wait_for_event(cola_eventos, &evento);
 
-                    case 0:
-                        imagen_enem = enemigo1;
-                        break;
-                    case 1:
-                        imagen_enem = enemigo2;
-                        break;
-                    case 2:
-                        imagen_enem = enemigo3;
-                        break;
+                        //Esto es para los resultados en pantalla
+                        if (evento.type == ALLEGRO_EVENT_KEY_CHAR) {
 
-                    }
+                            //Mientras la personas no escriba mas de 39 caracteres
+                            if (pos < 39) {
 
-                    // Si la imagen correspondiente no esta definida, saltar este enemigo
-                    if (!imagen_enem) {
-                        Aux_enem = Aux_enem->Siguiente;
-                        continue;
-                    }
+                                //Establecemos los eventos de teclado
+                                if (evento.keyboard.keycode == ALLEGRO_KEY_BACKSPACE && pos > 0) {
+                                    nombre[--pos] = '\0';
+                                }
 
-                    // Verificar las dimensiones de la imagen
-                    int ancho_e = al_get_bitmap_width(imagen_enem);
-                    int alto_e = al_get_bitmap_height(imagen_enem);
+                                //Si se da enter se guarda lo que se escribio
+                                else if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER) {
 
-                    //Validacion en caso de imagen erronea
-                    if (ancho_e <= 0 || alto_e <= 0) {
-                        std::cerr << "Error: Dimensiones de la imagen de enemigo no válidas." << std::endl;
-                        Aux_enem = Aux_enem->Siguiente;
-                        continue;
-                    }
+                                    // Guardar el archivo antes de salir
+                                    if (pos == 0) nombre[0] = '?';
+                                    CrearArchivo(buffer, nombre, enemigos_elim2, bloques_elim2);
 
-                    // Escala de un 50 por ciento
-                    float tam = 1.5;
-                    float escala = (diametro * tam) / ancho_e;
+                                    // Limpiar la pantalla 
+                                    al_clear_to_color(al_map_rgb(0, 0, 0));
+                                    al_flip_display();
 
-                    // Dibujamos la imagen escalada segun corresponda
-                    al_draw_scaled_bitmap(imagen_enem, 0, 0, ancho_e, alto_e, Aux_enem->x - ((diametro * tam) / 2),  Aux_enem->y - ((diametro * tam) / 2),  ancho_e* escala, alto_e* escala, 0);
+                                    // Limpiar recursos
+                                    al_destroy_timer(timer);
+                                    al_destroy_font(fuente1);
+                                    al_destroy_font(fuente2);
+                                    al_destroy_display(pantalla);
+                                    al_destroy_bitmap(bloque);
+                                    al_destroy_bitmap(fondo);
+                                    al_destroy_event_queue(cola_eventos);
 
-                }
-                
-                //Seguimos recorriendo la lista enlazada para cada enemigo
-                Aux_enem = Aux_enem->Siguiente;
+                                    // Volver al main
+                                    return 0;
+                                }
 
-     
-            }
+                                //Capturamos los espacios
+                                else if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+                                    nombre[pos++] = '_';
+                                }
 
-            // Llamamos a la funcion de colision con la bola
-            colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos, bloques_elim, enemigos_elim);
-
-            
-
-            // Verifica si la bola est activa
-
-            if (bola->estado) { 
-
-                // Rebote en los bordes laterales
-                if (bola->x - bola->radio < centroX + 25) { // Limite izquierdo
-                    bola->x = centroX + bola->radio + 25; // Ajustar la posicion 
-                    bola->velocidadX = -bola->velocidadX; // Rebote en el borde izquierdo
-                }
-                else if (bola->x + bola->radio > centroX + RX - 25) { // Limite derecho
-                    bola->x = centroX + RX - bola->radio - 25; // Ajustar la posicion 
-                    bola->velocidadX = -bola->velocidadX; // Rebote en el borde derecho
-                }
-
-                if (bola->y - bola->radio < centroY + 30) { // Limite superior
-                    bola->y = centroY + bola->radio + 30; // Ajustar la posicion para no salir
-                    bola->velocidadY = -bola->velocidadY; // Rebote en el borde superior
-                }
-
-                else if (bola->y + bola->radio > centroY + RY) { // Limite inferior
-                    vidas--; // Resta una vida si la bola sale por el borde inferior
-                    bola->x = jugador.x + centroX; // Reposiciona la bola en la zona centrada
-                    bola->y = jugador.y + centroY - 10; // Reposiciona por encima de la nave
-                    bola->velocidadY = -fabs(bola->velocidadY); // Rebote hacia arriba
-                }
-
-        
-                // Actualizar la posicion de la bola
-                bola->x += bola->velocidadX;
-                bola->y += bola->velocidadY;
-
-                // Escala para ajustar el radio
-                float escala = (2.0 * bola->radio) / al_get_bitmap_width(bolas); 
-
-                // Dibujar la imagen de la bola centrada 
-                al_draw_scaled_bitmap(bolas, 0, 0, al_get_bitmap_width(bolas), al_get_bitmap_height(bolas), bola->x - bola->radio, bola->y - bola->radio, al_get_bitmap_width(bolas)* escala, al_get_bitmap_height(bolas)* escala, 0);
-
-                
-            }
-
-            //Llamamos a dibujar nave
-            dibujar_nave(jugador, nave2, centroX, centroY);
-
-            // Mostrar estadisticas en la esquina superior derecha de la pantalla completa
-
-            sprintf(buffer, "Puntos: %d", puntos);
-            al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho - 100, 20, ALLEGRO_ALIGN_RIGHT, buffer);
-
-            sprintf(buffer, "Vidas: %d", vidas);
-            al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho - 100, 70, ALLEGRO_ALIGN_RIGHT, buffer);
-
-            sprintf(buffer, "Enemigos Eliminados: %d", enemigos_elim);
-            al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 40, ALLEGRO_ALIGN_LEFT, buffer);
-
-            sprintf(buffer, "Bloques Eliminados: %d", bloques_elim);
-            al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 90, ALLEGRO_ALIGN_LEFT, buffer);
-
-            //En caso de que se llegue a 0 vidas
-            if (vidas <= 0) {
-
-                // Limpiar pantalla 
-                al_clear_to_color(al_map_rgb(0, 0, 0));
-                al_flip_display();
-
-                // Establecer variables para salir del juego
-                hecho = false;
-                salida = 1;
-            }
-
-            // En caso de que hecho no se cumpla y salida sea 1
-            if (!hecho && salida == 1) {
-
-                //Establecemos diversas variables para puntaje y demas
-                int seguir = true;
-                char puntaje[60] = "Puntaje: ";
-                char enemigos_elim2[30] = "Enemigos Eliminados: ";
-                char bloques_elim2[30] = "Bloques Eliminados: ";
-
-                sprintf(buffer, "%d", puntos);  // Asegurarse de usar los puntos actuales
-                strcat_s(puntaje, 60, buffer);
-
-                strcpy(enemigos_elim2, "Enemigos Eliminados: ");  // Reinicia la cadena para evitar duplicados
-                sprintf(buffer, "%d", enemigos_elim);  // Guarda los enemigos
-                strcat_s(enemigos_elim2, 30, buffer);
-
-                strcpy(bloques_elim2, "Bloques Eliminados: ");  // Reinicia la cadena para evitar duplicados
-                sprintf(buffer, "%d", bloques_elim);  // Guarda los bloques
-                strcat_s(bloques_elim2, 30, buffer);
-
-                //Inicializacion del nombre
-                char nombre[40] = { '_' };
-                int pos = 0;
-
-                // Limpiar la pantalla antes de entrar al bucle de nombre
-                al_clear_to_color(al_map_rgb(0, 0, 0));
-                al_flip_display();
-
-                //Iniciamos el ciclo seguir
-                while (seguir) {
-
-                    //Llamamos a los eventos de allegro
-                    ALLEGRO_EVENT evento;
-                    al_wait_for_event(cola_eventos, &evento);
-
-                    //Esto es para los resultados en pantalla
-                    if (evento.type == ALLEGRO_EVENT_KEY_CHAR) {
-
-                        //Mientras la personas no escriba mas de 39 caracteres
-                        if (pos < 39) {
-
-                            //Establecemos los eventos de teclado
-                            if (evento.keyboard.keycode == ALLEGRO_KEY_BACKSPACE && pos > 0) {
-                                nombre[--pos] = '\0';
-                            }
-
-                            //Si se da enter se guarda lo que se escribio
-                            else if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-
-                                // Guardar el archivo antes de salir
-                                if (pos == 0) nombre[0] = '?';
-                                CrearArchivo(buffer, nombre, enemigos_elim2, bloques_elim2);
-
-                                // Limpiar la pantalla 
-                                al_clear_to_color(al_map_rgb(0, 0, 0));
-                                al_flip_display();
-
-                                // Limpiar recursos
-                                al_destroy_timer(timer);
-                                al_destroy_font(fuente1);
-                                al_destroy_font(fuente2);
-                                al_destroy_display(pantalla);
-                                al_destroy_bitmap(bloque);
-                                al_destroy_bitmap(fondo);
-                                al_destroy_event_queue(cola_eventos);
-
-                                // Volver al main
-                                return 0; 
-                            }
-
-                            //Capturamos los espacios
-                            else if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-                                nombre[pos++] = '_';
-                            }
-
-                            //Se capturan los caracteres visibles del teclado
-                            else if (evento.keyboard.unichar >= 32 && evento.keyboard.unichar <= 126) {
-                                nombre[pos++] = evento.keyboard.unichar;
+                                //Se capturan los caracteres visibles del teclado
+                                else if (evento.keyboard.unichar >= 32 && evento.keyboard.unichar <= 126) {
+                                    nombre[pos++] = evento.keyboard.unichar;
+                                }
                             }
                         }
+
+                        // Dibujamos en pantalla game over y los resultados de la persona
+                        al_clear_to_color(al_map_rgb(0, 0, 0));
+                        al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 250, ALLEGRO_ALIGN_CENTRE, "Game Over!");
+                        al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 - 500, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, puntaje);
+                        al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 - 100, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, enemigos_elim2);
+                        al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 400, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, bloques_elim2);
+                        al_draw_text(fuente2, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2, ALLEGRO_ALIGN_CENTRE, nombre);
+                        al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 200, ALLEGRO_ALIGN_CENTRE, "Presione Enter para volver al menu");
+
+                        al_flip_display();
                     }
-
-                    // Dibujamos en pantalla game over y los resultados de la persona
-                    al_clear_to_color(al_map_rgb(0, 0, 0));
-                    al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 250, ALLEGRO_ALIGN_CENTRE, "Game Over!");
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 - 500, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, puntaje);
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2  - 100, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, enemigos_elim2);
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 400, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, bloques_elim2);
-                    al_draw_text(fuente2, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2, ALLEGRO_ALIGN_CENTRE, nombre);
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 200, ALLEGRO_ALIGN_CENTRE, "Presione Enter para volver al menu");
-
-                    al_flip_display();
                 }
             }
+
+            
             
         }
     }
@@ -572,6 +594,7 @@ int arkanoid(int nivel, int vidas) {
     al_destroy_display(pantalla);
     al_destroy_bitmap(bloque);
     al_destroy_bitmap(fondo);
+    al_destroy_bitmap(fondorep);
     al_destroy_event_queue(cola_eventos);
     
     //Devuelve la salida

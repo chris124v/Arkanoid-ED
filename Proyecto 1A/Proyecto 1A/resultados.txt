@@ -16,3 +16,21 @@ Enemigos Eliminados: 3
 Bloques Eliminados: 29
 
 
+Nombre:Chris2
+Puntaje: 2
+Enemigos Eliminados: 3
+Bloques Eliminados: 2
+
+
+Nombre:?
+Puntaje: 5
+Enemigos Eliminados: 2
+Bloques Eliminados: 5
+
+
+Nombre:Chris
+Puntaje: 2
+Enemigos Eliminados: 3
+Bloques Eliminados: 2
+
+

@@ -568,18 +568,19 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque b
     }
 }
 
-//Funcion para mover los enemigos
-void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2) {
-   
+// Funcion para mover los enemigos
+void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, nave& jugador, int& puntos) {
+
     // Definir el tamano escalado de los bloques
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
     const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
 
     // Radio del enemigo 
-    const int radioEnemigo = diametro / 2;
+    const int radioEnemigo = diametro + 20;
 
-    //Inicializamos la lista de enemigos
+    // Inicializamos la lista de enemigos
     Ptrenemigo Aux = enemigos;
+
     while (Aux != nullptr) {
 
         // Limitar el movimiento a los bordes del area del fondo centrado
@@ -592,34 +593,33 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
             Aux->velocidadX = -abs(Aux->velocidadX); // Mover hacia la izquierda usando abs
         }
 
-        //Caso para mover hacia abajo
+        // Caso para mover hacia abajo
         if (Aux->y <= centroY) {
             Aux->y = centroY;
             Aux->velocidadY = abs(Aux->velocidadY); // Mover hacia abajo
         }
 
-        //Caso para mover hacia arriba
+        // Caso para mover hacia arriba
         if (Aux->y + diametro >= centroY + ResY) {
             Aux->y = centroY + ResY - diametro;
             Aux->velocidadY = -abs(Aux->velocidadY); // Mover hacia arriba
         }
 
-        // Verificar colision con bloques, ajustando por el radio del enemigo
+        // Verificar colisión con bloques, ajustando por el radio del enemigo
         Ptrbloque bloqueActual = bloques;
 
-        //Mientras no se hayan recorrido todos los bloques
+        // Mientras no se hayan recorrido todos los bloques
         while (bloqueActual != NULL) {
 
-            //Si estan activos
+            // Si están activos
             if (bloqueActual->estado) {
 
-                // Verifica colision considerando el radio del enemigo
+                // Verifica colisión considerando el radio del enemigo
                 if (Aux->x + radioEnemigo >= bloqueActual->x + centroX &&
                     Aux->x - radioEnemigo <= bloqueActual->x + centroX + anchoBloqueEscalado &&
                     Aux->y + radioEnemigo >= bloqueActual->y + centroY &&
                     Aux->y - radioEnemigo <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
-                   
                     // Rebote del enemigo al chocar con el bloque
                     if (Aux->y < bloqueActual->y + centroY || Aux->y > bloqueActual->y + centroY + altoBloqueEscalado) {
                         Aux->velocidadY = -Aux->velocidadY;  // Cambiar direccion vertical
@@ -627,19 +627,79 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
                     else {
                         Aux->velocidadX = -Aux->velocidadX;  // Cambiar direccion horizontal
                     }
-                    break; 
+                    break;
                 }
             }
 
-            //Sigue recorriendo la lista enlazada
+            // Sigue recorriendo la lista enlazada
             bloqueActual = bloqueActual->Siguiente;
+        }
+
+        // Verificar colision con la nave
+        float nave_izqui = jugador.x + centroX + 25;
+        float nave_dere = nave_izqui + nave_ancho - 50;
+        float nave_superior = jugador.y + centroY + 30;
+        float nave_inf = nave_superior + nave_alto - 58;
+
+        if (Aux->x + radioEnemigo >= nave_izqui && Aux->x - radioEnemigo <= nave_dere &&
+            Aux->y + radioEnemigo >= nave_superior && Aux->y - radioEnemigo <= nave_inf) {
+
+            puntos -= 5;
+
+            // Determinar el eje principal de colision
+            float deltaX = (Aux->x + radioEnemigo / 2) - (nave_izqui + nave_ancho / 2);
+            float deltaY = (Aux->y + radioEnemigo / 2) - (nave_superior + nave_alto / 2);
+
+            // Cambiar la dirección basándonos en el eje de colision
+            if (fabs(deltaX) > fabs(deltaY)) {
+                Aux->velocidadX = -Aux->velocidadX; // Cambiar direccion en x
+                Aux->x += (deltaX > 0) ? 5 : -5; // Separar en X para evitar pegado
+            }
+            else {
+                Aux->velocidadY = -Aux->velocidadY; // Cambiar direccion en Y
+                Aux->y += (deltaY > 0) ? 5 : -5; // Separar en Y para evitar pegado
+            }
+        }
+
+        // Verificar colision entre enemigos
+        Ptrenemigo coli_enem = enemigos;
+
+        while (coli_enem != NULL) {
+
+            if (coli_enem != Aux) { // Evitar compararse con si mismo
+
+                //Variables de posicion
+                float distanciaX = Aux->x - coli_enem->x;
+                float distanciaY = Aux->y - coli_enem->y;
+                float distancia = sqrt(distanciaX * distanciaX + distanciaY * distanciaY);
+
+                if (distancia < diametro) { // Detectar colision si están muy cerca
+
+                    // Cambiar direccion de movimiento sin afectar el tipo de movimiento
+                    if (Aux->velocidadX != 0) {
+                        Aux->velocidadX = -Aux->velocidadX; // Rebote en el eje X
+                        coli_enem->velocidadX = -coli_enem->velocidadX; // Rebote en el otro enemigo
+                    }
+                    if (Aux->velocidadY != 0) {
+                        Aux->velocidadY = -Aux->velocidadY; // Rebote en el eje Y
+                        coli_enem->velocidadY = -coli_enem->velocidadY; // Rebote en el otro enemigo
+                    }
+
+                    // Separar a los enemigos para evitar pegado
+                    Aux->x += (distanciaX > 0) ? 5 : -5;
+                    Aux->y += (distanciaY > 0) ? 5 : -5;
+                    coli_enem->x += (distanciaX < 0) ? 5 : -5;
+                    coli_enem->y += (distanciaY < 0) ? 5 : -5;
+                }
+            }
+            coli_enem = coli_enem->Siguiente;
         }
 
         // Actualizar posicion del enemigo
         Aux->x += Aux->velocidadX;
         Aux->y += Aux->velocidadY;
 
-        //Sigue recorriendo la lista
+        // Sigue recorriendo la lista
         Aux = Aux->Siguiente;
     }
 }
