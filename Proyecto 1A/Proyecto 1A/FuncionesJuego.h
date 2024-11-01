@@ -682,8 +682,8 @@ void CrearArchivo(char* puntaje, char* nombre, char* enem_elim, char* b_elim)
     else {
         fprintf(archivo, "Nombre:%s\n", nombre);
         fprintf(archivo, "Puntaje: %s\n", puntaje);
-        fprintf(archivo, "Enemigos Eliminados: %s\n", enem_elim);
-        fprintf(archivo, "Bloques Eliminados: %s\n", b_elim);
+        fprintf(archivo, "%s\n", enem_elim);
+        fprintf(archivo, "%s\n", b_elim);
         fprintf(archivo, "\n\n");
     }
 
@@ -696,9 +696,9 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
 {   
     //Establecemos limites para nombre y puntaje
     char nombre[40];
-    char puntaje[30];
-    char enemigos_eliminados[30];
-    char bloques_eliminados[30];
+    char puntaje[40];
+    char enemigos_eliminados[40];
+    char bloques_eliminados[40];
     int i = 0;
     int e = 0;
 
@@ -713,22 +713,22 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
         //Recorremos hasta el final del archivo
         while (!feof(archivo)) {
 
-            //Leemos nombre y puntaje
+            //Leemos nombre, puntaje, enemgios elimados y bloques eliminados
             fscanf(archivo, "Nombre:%s\n", nombre);
             fscanf(archivo, "Puntaje: %s\n", puntaje);
-            fscanf(archivo, "Enemigos eliminados:%s\n", enemigos_eliminados);
-            fscanf(archivo, "Bloques elimnados:%s\n", bloques_eliminados);
+            fscanf(archivo, "Enemigos Eliminados: %s\n", enemigos_eliminados);
+            fscanf(archivo, "Bloques Eliminados: %s\n", bloques_eliminados);
 
             //Leemos tanto nombre como puntaje y lo imprimimos
-            if (inicio <= i && i < inicio + 4) {
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Nombre: ");
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, nombre);
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Puntaje: ");
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, puntaje);
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (360.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Enemigos Eliminados: ");
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (360.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, enemigos_eliminados);
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (390.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Bloques Eliminados: ");
-                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (390.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, bloques_eliminados);
+            if (inicio <= i && i < inicio + 1) {
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 - 10, (y * (370.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Nombre: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 - 10, (y * (370.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, nombre);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (400.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Puntaje: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (400.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, puntaje);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 + 180, (y * (430.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Enemigos Eliminados: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 + 180, (y * (430.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, enemigos_eliminados);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 + 160, (y * (460.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Bloques Eliminados: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2 + 160, (y * (460.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, bloques_eliminados);
                 e++;
             }
 

@@ -27,6 +27,7 @@ int anchoescalado = 1920;
 
 //Main principal del juego
 void main()
+
 {   
     //Mensaje en caso de que no se pueda inicializar el juego
     if (!al_init()) {
@@ -72,13 +73,14 @@ void main()
     //Llamamos al fondo y al logo de arkanoid
     ALLEGRO_BITMAP* Fondo = al_load_bitmap("Imagenes/fondo_main.jpg");
     ALLEGRO_BITMAP* Logo = al_load_bitmap("Imagenes/arkanoid.png");
+    ALLEGRO_BITMAP* Flecha = al_load_bitmap("Imagenes/Flecha.png");
 
     //Estos dos if son en caso de que no se encuentren las imagenes
     if (!Fondo) {
         al_show_native_message_box(NULL, "Error", "Error", "No se pudo cargar el fondo", NULL, NULL);
         return;
     }
-    if (!Logo) {
+    if (!Logo || !Flecha) {
         al_show_native_message_box(NULL, "Error", "Error", "No se pudo cargar el logo", NULL, NULL);
         return;
     }
@@ -107,6 +109,7 @@ void main()
 
     //Establecemos variables para cuando inicializemos el juego 
     bool hecho = true;
+    int inicio = 0;
     
 
     //Inicializamos los timers
@@ -230,9 +233,10 @@ void main()
 
             //Si se presiona salir creacion pasa a ser false saliendo de la interfaz
             if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+
                 if (eventos.mouse.button & 1) {
 
-
+                    
                     bool salir = false;
 
                     //Aqui el ciclo se seguira cumpliendo
@@ -309,7 +313,115 @@ void main()
             //Si se presiona salir creacion pasa a ser false saliendo de la interfaz
             if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
                 if (eventos.mouse.button & 1) {
+
+              
+                    //Salimos del ciclo while
+                    bool salir = false;
                     
+                    //Si se cumple que salir es true
+                    while (!salir) {
+
+                        //Iniciamos la cola de eventos
+                        al_wait_for_event(cola_eventos, &eventos);
+
+                        //En caso de que se inicialice el timer
+                        if (eventos.type == ALLEGRO_EVENT_TIMER) {
+
+                            //Verificamos que sea del tipo timer
+                            if (eventos.timer.source == timer) {
+
+                                //Creamos fonod negro
+                                al_clear_to_color(al_map_rgb(0, 0, 0));
+
+                                //Llamamos al fondo y que se escale en base a la pantalla 
+                                al_draw_scaled_bitmap(Fondo, 0, 0, anchoescalado, alturaescalada, 0, 0, RX, RY, 0);
+
+                                //Se dibujan los textos pertinents para el submenu
+                                al_draw_text(font, al_map_rgb(0, 255, 255), X / 2, (RY * (100.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Arkanoid");
+                                al_draw_text(font, al_map_rgb(250, 250, 250), X / 2, (RY * (200.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "RESULTADOS");
+
+                                //Estas serian las flechas para ver los resultados
+                                al_draw_bitmap(Flecha, X / 2 - 200, (RY * (300.0 / 768.0)), NULL);
+                                al_draw_bitmap(Flecha, X / 2 - 200, (RY * (500 / 768.0)), ALLEGRO_FLIP_VERTICAL);
+
+                                //Esta funcion permite guardar los resultados de otro jugadores
+                                CargarArchivo(X, Y, font3, inicio);
+
+                                //Establecemos un texto para devolvernos
+                                al_draw_text(font2, al_map_rgb(250, 250, 250), X / 2 - 300, (RY * (600.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Atras");
+                                al_flip_display();
+                            }
+                        }
+
+                        //Se invoca nuevamente al movimiento del mouse 
+                        if (eventos.type == ALLEGRO_EVENT_MOUSE_AXES)
+                        {
+                            mousex = eventos.mouse.x;
+                            mousey = eventos.mouse.y;
+                        }
+
+                        //Si posicionamos el mouse en la flecha de arriba
+                        if ((mousex >= X / 2 - 200 && mousex <= X / 2 - 155) && (mousey >= 380 && mousey <= 490)) {
+
+                            //Pintamos la imagen de la flecha en color cyan
+                            al_draw_tinted_bitmap(Flecha, al_map_rgb(0, 255, 255), X / 2 - 200, (RY * (300.0 / 768.0)), NULL);
+
+                            //Movimiento de las flechas para subir
+                            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+                            {
+                                if (eventos.mouse.button & 1) {
+                                    if (inicio >= 1) {
+                                        inicio = inicio - 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        //Este es el caso de la flecha hacia abajo
+                        if ((mousex >= X / 2 - 200 && mousex <= X / 2 - 155) && (mousey >= 620 && mousey <= 720)) {
+
+                            //Pintamos el bitmap en color cyan
+                            al_draw_tinted_bitmap(Flecha, al_map_rgb(0, 255, 255), X / 2 - 200, (RY * (500.0 / 768.0)), ALLEGRO_FLIP_VERTICAL);
+
+                            //Esto es para bajar
+                            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+                            {
+                                if (eventos.mouse.button & 1) {
+                                    inicio = inicio + 1;
+                                }
+                            }
+                        }
+
+                        //Caso de salir solo nos pernmite salir de los resultados
+                        if ((mousex >= X / 2 - 42 - 300 && mousex <= X / 2 + 42 - 300) && (mousey >= (RY * (6.0 / 768.0)) && mousey <= (RY * (640.0 / 768.0)))) {
+
+                            al_draw_text(font2, al_map_rgb(0, 255, 255), X / 2 - 300, (RY * (600.0 / 768.0)), ALLEGRO_ALIGN_CENTRE, "Atras");
+
+                            if (eventos.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
+                            {
+                                //Aqui finalizaria el ciclo while
+                                if (eventos.mouse.button & 1) {
+                                    salir = true;
+                                }
+                            }
+                        }
+
+                        //Esto tambien en caso que se quiera salir con escape en lugar de salir
+                        if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
+
+                            //Se hace el switch con el teclado 
+                            switch (eventos.keyboard.keycode) {
+
+                                //Si se usa escape se sale de juego
+                            case ALLEGRO_KEY_ESCAPE:
+
+                                creacion = false;
+                            }
+                        }
+
+                        //En este al flip display lo que se realiza es pasar directamente al menu principal con los datos ya construidos
+                        al_flip_display();
+                    }
                 }
             }
         }
@@ -348,8 +460,10 @@ void main()
     //Destruimos todos los recursos
     al_destroy_bitmap(Fondo);
     al_destroy_bitmap(Logo);
+    al_destroy_bitmap(Flecha);
     al_destroy_font(font);
     al_destroy_font(font2);
+    al_destroy_font(font3);
     al_destroy_timer(timer);
     al_destroy_timer(timer2);
     al_destroy_event_queue(cola_eventos);

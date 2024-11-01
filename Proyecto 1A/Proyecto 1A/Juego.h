@@ -472,20 +472,22 @@ int arkanoid(int nivel, int vidas) {
 
                 //Establecemos diversas variables para puntaje y demas
                 int seguir = true;
-                char puntaje[60] = "Puntaje, Enemigos Eliminados y Bloques Eliminados: ";
-                char enemigos_elim2[30] = ", ";
-                char bloques_elim2[30] = ", ";
+                char puntaje[60] = "Puntaje: ";
+                char enemigos_elim2[30] = "Enemigos Eliminados: ";
+                char bloques_elim2[30] = "Bloques Eliminados: ";
 
                 sprintf(buffer, "%d", puntos);  // Asegurarse de usar los puntos actuales
                 strcat_s(puntaje, 60, buffer);
 
-                sprintf(buffer, "%d", enemigos_elim);  //Guarda los enemigos
+                strcpy(enemigos_elim2, "Enemigos Eliminados: ");  // Reinicia la cadena para evitar duplicados
+                sprintf(buffer, "%d", enemigos_elim);  // Guarda los enemigos
                 strcat_s(enemigos_elim2, 30, buffer);
 
-                sprintf(buffer, "%d", bloques_elim);  //Guarda los bloques
+                strcpy(bloques_elim2, "Bloques Eliminados: ");  // Reinicia la cadena para evitar duplicados
+                sprintf(buffer, "%d", bloques_elim);  // Guarda los bloques
                 strcat_s(bloques_elim2, 30, buffer);
 
-
+                //Inicializacion del nombre
                 char nombre[40] = { '_' };
                 int pos = 0;
 
@@ -547,12 +549,12 @@ int arkanoid(int nivel, int vidas) {
                         }
                     }
 
-                    // Redibujar la pantalla
+                    // Dibujamos en pantalla game over y los resultados de la persona
                     al_clear_to_color(al_map_rgb(0, 0, 0));
                     al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 250, ALLEGRO_ALIGN_CENTRE, "Game Over!");
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, puntaje);
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 630, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, enemigos_elim2);
-                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 700, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, bloques_elim2);
+                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 - 500, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, puntaje);
+                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2  - 100, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, enemigos_elim2);
+                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 400, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, bloques_elim2);
                     al_draw_text(fuente2, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2, ALLEGRO_ALIGN_CENTRE, nombre);
                     al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 200, ALLEGRO_ALIGN_CENTRE, "Presione Enter para volver al menu");
 
