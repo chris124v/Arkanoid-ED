@@ -491,9 +491,11 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 }
 
 
-
+//Funcion para generar los enemigos
 void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque bloques, int posicionNaveY, int centroY, int centroX) {
-    // Parámetros del área jugable basados en los valores proporcionados
+
+    // Parametros del area jugable basados en los valores proporcionados
+
     const int margenSuperior = centroY + diametro + 300;            // Borde superior justo debajo de los bloques
     const int margenInferior = posicionNaveY - 50;                 // Borde inferior justo encima de la nave
     const int margenIzquierdo = centroX + diametro + 15;           // Borde izquierdo de la zona jugable
@@ -501,115 +503,138 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque b
     const int anchoEnemigo = diametro;                             // Ancho del enemigo
     const int altoEnemigo = diametro;                              // Altura del enemigo
 
-    // Generar enemigos dentro de los límites definidos
+    // Generar enemigos dentro de los limites definidos
     for (int i = 0; i < cantidad; ++i) {
 
+        //Establecemos un nuevo enemigo
         Ptrenemigo nuevoEnemigo = new enemigo;
-        int tipo = rand() % 3; // Selección aleatoria del tipo de enemigo (0 = Adherido, 1 = Rebote, 2 = Lineal)
+
+        // Seleccion aleatoria del tipo de enemigo (0 = Adherido, 1 = Rebote, 2 = Lineal)
+        int tipo = rand() % 3; 
+
+        //Llamamos a inicializar enemigo
         inicializar_enemigo(nuevoEnemigo, i, tipo, ResX);
 
-        // Generar posición aleatoria dentro de la zona delimitada
+        // Generamos posicion aleatoria dentro de la zona delimitada
         int xPos = margenIzquierdo + (rand() % (margenDerecho - margenIzquierdo - anchoEnemigo));
         int yPos = margenSuperior + (rand() % (margenInferior - margenSuperior - altoEnemigo));
 
+        // Enemigo inicia vivo
         nuevoEnemigo->x = xPos;
         nuevoEnemigo->y = yPos;
-        nuevoEnemigo->estado = true;                  // Enemigo inicia activo
-        nuevoEnemigo->Siguiente = nullptr;
+        nuevoEnemigo->estado = true;                  
+        nuevoEnemigo->Siguiente = NULL;
 
-        // Configurar el movimiento basado en el tipo de enemigo
+        // Configurar el movimiento basado en el tipo de enemigo mediante 
+
         switch (tipo) {
-        case 0: // Adherido
-            nuevoEnemigo->velocidadX = 2; // Velocidad baja en X
-            nuevoEnemigo->velocidadY = 2; // Velocidad baja en Y
+        
+        //Caso adherido
+        case 0: 
+            nuevoEnemigo->velocidadX = 2; // Velocidad baja en x
+            nuevoEnemigo->velocidadY = 2; // Velocidad baja en y
+            break;
+        
+        // Caso rebote
+        case 1: 
+            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en x
+            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en y
             break;
 
-        case 1: // Rebote
-            nuevoEnemigo->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en X
-            nuevoEnemigo->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en Y
-            break;
-
-        case 2: // Lineal (Arriba-Abajo-Izquierda-Derecha)
-            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Solo en X o solo en Y
+        //Caso lineal
+        case 2: 
+            nuevoEnemigo->velocidadX = (rand() % 2 == 0 ? 2 : 0); // Solo en x o solo en y
             nuevoEnemigo->velocidadY = (nuevoEnemigo->velocidadX == 0 ? 2 : 0);
             break;
         }
 
-        // Añadir el nuevo enemigo a la lista de enemigos
+        // Anadir el nuevo enemigo a la lista de enemigos si no hay
         if (!enemigos) {
             enemigos = nuevoEnemigo;
         }
+
+        //Anadir los enemigos a la lista enlazada al final como si fuera un cola
         else {
-            Ptrenemigo temp = enemigos;
-            while (temp->Siguiente) temp = temp->Siguiente;
-            temp->Siguiente = nuevoEnemigo;
+            Ptrenemigo Aux = enemigos;
+            while (Aux->Siguiente) Aux = Aux->Siguiente;
+            Aux->Siguiente = nuevoEnemigo;
         }
     }
 }
 
+//Funcion para mover los enemigos
 void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2) {
    
-    // Definir el tamaño escalado de los bloques
+    // Definir el tamano escalado de los bloques
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
     const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
 
-    // Radio del enemigo (mitad del diámetro)
+    // Radio del enemigo 
     const int radioEnemigo = diametro / 2;
 
-    Ptrenemigo temp = enemigos;
-    while (temp != nullptr) {
+    //Inicializamos la lista de enemigos
+    Ptrenemigo Aux = enemigos;
+    while (Aux != nullptr) {
 
-        // Limitar el movimiento a los bordes del área del fondo centrado
-        if (temp->x <= centroX) {
-            temp->x = centroX;
-            temp->velocidadX = abs(temp->velocidadX); // Mover hacia la derecha
+        // Limitar el movimiento a los bordes del area del fondo centrado
+        if (Aux->x <= centroX) {
+            Aux->x = centroX;
+            Aux->velocidadX = abs(Aux->velocidadX); // Mover hacia la derecha usando abs
         }
-        if (temp->x + diametro >= centroX + ResX) {
-            temp->x = centroX + ResX - diametro;
-            temp->velocidadX = -abs(temp->velocidadX); // Mover hacia la izquierda
-        }
-        if (temp->y <= centroY) {
-            temp->y = centroY;
-            temp->velocidadY = abs(temp->velocidadY); // Mover hacia abajo
-        }
-        if (temp->y + diametro >= centroY + ResY) {
-            temp->y = centroY + ResY - diametro;
-            temp->velocidadY = -abs(temp->velocidadY); // Mover hacia arriba
+        if (Aux->x + diametro >= centroX + ResX) {
+            Aux->x = centroX + ResX - diametro;
+            Aux->velocidadX = -abs(Aux->velocidadX); // Mover hacia la izquierda usando abs
         }
 
-        // Verificar colisión con bloques, ajustando por el radio del enemigo
+        //Caso para mover hacia abajo
+        if (Aux->y <= centroY) {
+            Aux->y = centroY;
+            Aux->velocidadY = abs(Aux->velocidadY); // Mover hacia abajo
+        }
+
+        //Caso para mover hacia arriba
+        if (Aux->y + diametro >= centroY + ResY) {
+            Aux->y = centroY + ResY - diametro;
+            Aux->velocidadY = -abs(Aux->velocidadY); // Mover hacia arriba
+        }
+
+        // Verificar colision con bloques, ajustando por el radio del enemigo
         Ptrbloque bloqueActual = bloques;
 
+        //Mientras no se hayan recorrido todos los bloques
         while (bloqueActual != NULL) {
 
+            //Si estan activos
             if (bloqueActual->estado) {
 
-                // Verifica colisión considerando el radio del enemigo
-                if (temp->x + radioEnemigo >= bloqueActual->x + centroX &&
-                    temp->x - radioEnemigo <= bloqueActual->x + centroX + anchoBloqueEscalado &&
-                    temp->y + radioEnemigo >= bloqueActual->y + centroY &&
-                    temp->y - radioEnemigo <= bloqueActual->y + centroY + altoBloqueEscalado) {
+                // Verifica colision considerando el radio del enemigo
+                if (Aux->x + radioEnemigo >= bloqueActual->x + centroX &&
+                    Aux->x - radioEnemigo <= bloqueActual->x + centroX + anchoBloqueEscalado &&
+                    Aux->y + radioEnemigo >= bloqueActual->y + centroY &&
+                    Aux->y - radioEnemigo <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
                    
                     // Rebote del enemigo al chocar con el bloque
-                    if (temp->y < bloqueActual->y + centroY || temp->y > bloqueActual->y + centroY + altoBloqueEscalado) {
-                        temp->velocidadY = -temp->velocidadY;  // Cambiar dirección vertical
+                    if (Aux->y < bloqueActual->y + centroY || Aux->y > bloqueActual->y + centroY + altoBloqueEscalado) {
+                        Aux->velocidadY = -Aux->velocidadY;  // Cambiar direccion vertical
                     }
                     else {
-                        temp->velocidadX = -temp->velocidadX;  // Cambiar dirección horizontal
+                        Aux->velocidadX = -Aux->velocidadX;  // Cambiar direccion horizontal
                     }
-                    break; // Termina la comprobación una vez que se detecta una colisión
+                    break; 
                 }
             }
 
+            //Sigue recorriendo la lista enlazada
             bloqueActual = bloqueActual->Siguiente;
         }
 
-        // Actualizar posición del enemigo
-        temp->x += temp->velocidadX;
-        temp->y += temp->velocidadY;
+        // Actualizar posicion del enemigo
+        Aux->x += Aux->velocidadX;
+        Aux->y += Aux->velocidadY;
 
-        temp = temp->Siguiente;
+        //Sigue recorriendo la lista
+        Aux = Aux->Siguiente;
     }
 }
 
