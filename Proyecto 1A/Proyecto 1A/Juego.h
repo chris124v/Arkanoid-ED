@@ -1,134 +1,185 @@
+//Este serie el archivo del juego como tal en donde implementamos la parte grafica
+
+//Christopher Daniel Vargas Villalta, Carnet: 2024108443
+//Santiago Espinoza Rendon, Carnet: 2024156530
+
 #pragma once
 
+//Llamamos a las funciones del juego
 #include "FuncionesJuego.h"
 
+//Usamos esto para evitar problemas de archivos
 using namespace std;
 #pragma warning(disable:4996)
 #define FPS 60.0
 
+//Juego principal de arkanoid 
 int arkanoid(int nivel, int vidas) {
 
+    //LLamamos al monitor para obtener su informacion
     ALLEGRO_MONITOR_INFO monitor;
     al_get_monitor_info(0, &monitor);
+
+    //Definimos el ancho y alto de la pantalla segun el monitor
     const int pantallaAncho = monitor.x2 - monitor.x1;
     const int pantallaAlto = monitor.y2 - monitor.y1;
 
-    // Dimensiones fijas del área de juego
-    const int RX = 800; // Ancho fijo del área de juego
-    const int RY = 1100; // Altura fija del área de juego
+    // Dimensiones fijas del area de juego
+    const int RX = 800; 
+    const int RY = 1100; 
 
+    //Obtenemos la pantallla o display y lo acomodamos segun el monitor.
     ALLEGRO_DISPLAY* pantalla = al_create_display(pantallaAncho, pantallaAlto);
+
+    //Lo designamos como pantalla en fullscreen
     al_set_display_flag(pantalla, ALLEGRO_FULLSCREEN, true);
 
+    //Este seria el nombre de la pantalla
     al_set_window_title(pantalla, "Arkanoid");
 
+    //Mensaje en caso de que la pantalla no se pueda inicializar
     if (!pantalla) {
         al_show_native_message_box(NULL, "Ventana Emergente", "Error", "No se puede crear la pantalla", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
 
+    //Establecemos los tipos de fuentes a cargar con su tamano
     ALLEGRO_FONT* fuente1 = al_load_font("Video-Font.ttf", 40, NULL);
     ALLEGRO_FONT* fuente2 = al_load_font("Video-Font.ttf", 30, NULL);
+
+    //Este mensaje se da en caso de que no se puedan cargar las fuentes
     if (!fuente1 || !fuente2) {
         al_show_native_message_box(pantalla, "Error", "Carga de Fuente", "No se pudo cargar las fuentes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
 
+    //Aqui cargamos la imagenes del juego
     ALLEGRO_BITMAP* bloque = al_load_bitmap("Imagenes/Celeste_1.png");
     ALLEGRO_BITMAP* fondo = al_load_bitmap("Imagenes/fondo_juego.png");
     ALLEGRO_BITMAP* nave2 = al_load_bitmap("Imagenes/Nave_2.png");
     ALLEGRO_BITMAP* fondo2 = al_load_bitmap("Imagenes/fondo_main.jpg");
 
-    if (!bloque || !fondo || !nave2) {
+    //Mensaje en caso de que no se puedan cargar las imagenes
+    if (!bloque || !fondo || !nave2 ) {
         al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o más imágenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
+
+    //Establecemos las direcciones de la nave
     enum Direccion { NINGUNA, IZQUIERDA, DERECHA };
-    enum Direccion Dir = NINGUNA;
+    enum Direccion Dir = NINGUNA; //Definimos una direccion para que no se mueva
 
-    // Factor de escala para reducir el tamaño de la imagen al 50%
-    const float escalaFactor = 0.5;
-
-    // Calcula el ancho y alto escalados del bloque
-    const int anchoBloqueEscalado = al_get_bitmap_width(bloque) * escalaFactor;
-    const int altoBloqueEscalado = al_get_bitmap_height(bloque) * escalaFactor;
-
+    //Aqui inicialiamos la cola de eventos 
     ALLEGRO_EVENT_QUEUE* cola_eventos = al_create_event_queue();
+
+    //Inicializamos los timers
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
+
+    //Registramos en la cola de eventos el timer y el teclado
     al_register_event_source(cola_eventos, al_get_timer_event_source(timer));
     al_register_event_source(cola_eventos, al_get_keyboard_event_source());
 
+    //Establecemos las variables del juegp
     bool hecho = true;
     int puntos = 0;
+
+    //Buffer para el nombre
     char buffer[20];
+
+    //Salida del juego
     int salida = 0;
 
+    //Inicializamos el jugador, bola, enemigos y bloqq
     nave jugador;
-    Ptrbola bola = NULL; // Aquí ya lo tienes
+    Ptrbola bola = NULL; 
     Ptrbloque bloques = NULL;
     Ptrenemigo enemigos = NULL;
-    int probabilidadEnemigos = 2;
-    int maxEnemigosPorNivel = 1;  // Maximum number of enemies per level
-    int enemigosGenerados = 0;
+
+    //Probabilidades por nivel
+    int proba_enem = 2;
+    int enem_nivel = 1;  
+    int enemigos_genera = 0;
 
     // Calcula la posición para centrar el área de juego en pantalla completa
     int centroX = (pantallaAncho - RX) / 2;
     int centroY = (pantallaAlto - RY) / 2;
 
+    //Llamamos a las funciones para inicializar la bola, nave y bloques
     Inicializar_nave(jugador, RX);
     inicializar_bola(bola, jugador, 5);
     formacion_bloques(bloques, nivel, bloque);
 
+    //Pone en negro la pantalla
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_flip_display();
     al_rest(1);
+
+    //Inicializa los timers
     al_start_timer(timer);
 
+    //Ciclo while mientras se cumpla hecho
     while (hecho) {
+
+        //Iniciamos los eventos
         ALLEGRO_EVENT eventos;
+
+        //Esperamos los eventos
         al_wait_for_event(cola_eventos, &eventos);
 
+        //Si ya no quedan bloques
         if (!quedanBloques(bloques)) {
+
+            //Subimos el nivel
             nivel++;
 
-            if (maxEnemigosPorNivel > 5) {
-                maxEnemigosPorNivel++;
+            //Subimos los enemigos por cada nivel
+            if (enem_nivel > 5) {
+                enem_nivel++;
             }
 
             // Resetea el contador de enemigos generados para el nuevo nivel
-            enemigosGenerados = 0;
+            enemigos_genera = 0;
 
-            // Mensaje de transición de nivel
+            // Mensaje de transicion de nivel
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            al_draw_text(fuente1, al_map_rgb(255, 255, 20), pantallaAncho / 2, pantallaAlto / 2 - 30, ALLEGRO_ALIGN_CENTRE, "¡Nivel Completado!");
-            char mensajeNivel[20];
+
+            //Establecemos un char para ir por los 10 niveles
+            char mensajeNivel[10];
             sprintf(mensajeNivel, "Nivel %d", nivel);
-            al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 30, ALLEGRO_ALIGN_CENTRE, mensajeNivel);
+
+            //Establecemos un mensaje de cambio de nivel
+            al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 40, ALLEGRO_ALIGN_CENTRE, mensajeNivel);
             al_flip_display();
+
+            //Cambia al siguiente nivel
             al_rest(2);
 
-            // Generación de nueva formación de bloques y suma de puntos
+            // Generación de nueva formacion de bloques y suma de puntos
             formacion_bloques(bloques, nivel, bloque);
 
+            //Suma de puntos de 100 por cada nivel
             puntos += 100;
 
             continue;
         }
 
         
-
+        //Esto es en caso de que se presione una tecla
         if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch (eventos.keyboard.keycode) {
 
+            //Si se presiona escape salimos del juego
             case ALLEGRO_KEY_ESCAPE:
                 hecho = false;
                 salida = 0;
                 break;
-
+            
+            //Si se presiona la tecla izquierda la nave va a la izquierda
             case ALLEGRO_KEY_LEFT:
                 Dir = IZQUIERDA;
                 break;
-
+            
+            //Si se presiona la tecla derecha se va a la derecha
             case ALLEGRO_KEY_RIGHT:
                 Dir = DERECHA;
                 break;
@@ -137,6 +188,8 @@ int arkanoid(int nivel, int vidas) {
 
         // Manejo de teclas liberadas
         if (eventos.type == ALLEGRO_EVENT_KEY_UP) {
+
+            //Esto seria el caso de ninguno en caso de que se liberen las flechas
             switch (eventos.keyboard.keycode) {
             case ALLEGRO_KEY_LEFT:
                 if (Dir == IZQUIERDA)
@@ -149,14 +202,16 @@ int arkanoid(int nivel, int vidas) {
             }
         }
 
+        //Aqui iniciamos los eventos del timer
         if (eventos.type == ALLEGRO_EVENT_TIMER) {
 
-            // Baja la probabilidad de aparición de enemigos al 2%
-            if (enemigosGenerados < maxEnemigosPorNivel && rand() % 100 < probabilidadEnemigos) {
-                generar_enemigos(enemigos, 2, nivel);
-                enemigosGenerados++;  // Increment the counter for each generated enemy
+            // Baja la probabilidad de aparicion de enemigos al 2%
+            if (enemigos_genera < enem_nivel && rand() % 100 < proba_enem) {
+                generar_enemigos(enemigos, 2, nivel, bloques, ResY - 300, centroY, centroX);
+                enemigos_genera++; //Se incrementan los enemigos por 1 en cada nivel
             }
 
+            //Llamamos la funcion de mover los enemigos en el area del juego
             mover_enemigos(enemigos, bloques, centroX, centroY, bloque);
 
 
@@ -165,87 +220,86 @@ int arkanoid(int nivel, int vidas) {
             switch (Dir) {
 
             case IZQUIERDA:
-                if (jugador.x >= centroX - RX / 2 - 120) // Límite izquierdo
-                    jugador.x -= jugador.velocidadY;
+                if (jugador.x >= centroX - RX / 2 - 120) // Limite izquierdo
+                    jugador.x -= jugador.velocidadX;
                 break;
 
             case DERECHA:
-                if (jugador.x <= centroX + RX / 2 - 300) // Límite derecho
-                    jugador.x += jugador.velocidadY;
+                if (jugador.x <= centroX + RX / 2 - 300) // Limite derecho
+                    jugador.x += jugador.velocidadX;
                 break;
             }
 
+            //Esto es en caso de que se presione escape para salir del juego
             if (eventos.type == ALLEGRO_EVENT_KEY_DOWN) {
                 switch (eventos.keyboard.keycode) {
                 case ALLEGRO_KEY_ESCAPE:
                     hecho = false;
                 }
             }
+
+            //Flip display para actualizar frames
             al_flip_display();
 
+            //Cambiamos todo a color negro
             al_clear_to_color(al_map_rgb(0, 0, 0));
 
+            //Dibujamos el fondo de estrellas
             al_draw_bitmap(fondo2, 0, 0, 0);
 
-            // Dibujar fondo centrado sin cambiar su proporción vertical
+            // Dibujar fondo centrado sin cambiar su proporcion vertical
             al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
 
-            // Ajuste de posición para los bloques y otros elementos
-            Ptrbloque tempBloque = bloques;
-            while (tempBloque != NULL) {
-                if (tempBloque->estado) {
+            //Establecemos la lista enlazada de bloques
+            Ptrbloque bloquesss = bloques;
 
-                    al_draw_scaled_bitmap(
-                        bloque,                           // Bitmap original del bloque
-                        0, 0,                             // Coordenadas origen en la imagen (0, 0 en este caso)
-                        al_get_bitmap_width(bloque),      // Ancho de la imagen original
-                        al_get_bitmap_height(bloque),     // Alto de la imagen original
-                        tempBloque->x + centroX,          // Posición X de destino en pantalla
-                        tempBloque->y + centroY,          // Posición Y de destino en pantalla
-                        al_get_bitmap_width(bloque) / 2,  // Ancho escalado (ajústalo según necesidad)
-                        al_get_bitmap_height(bloque) / 2, // Alto escalado (ajústalo según necesidad)
-                        0                                 // Sin banderas de dibujo adicionales
-                    );
+            //Recorre todos los bloques
+            while (bloquesss != NULL) {
 
-                    
+                //Si esta activo
+                if (bloquesss->estado) {
+
+                    //Dibujamos los bloques con los factores de posicion
+                    al_draw_scaled_bitmap( bloque, 0, 0, al_get_bitmap_width(bloque), al_get_bitmap_height(bloque), bloquesss->x + centroX, bloquesss->y + centroY, al_get_bitmap_width(bloque) / 2, al_get_bitmap_height(bloque) / 2, 0 );
+
                 }
 
-                tempBloque = tempBloque->Siguiente;
+                //Seguimos recorriendo la lista enlazada de los bloques
+                bloquesss = bloquesss->Siguiente;
             }
 
-        
+            
+            Ptrenemigo Aux_enem = enemigos;
 
-            Ptrenemigo tempEnemigo = enemigos;
+            while (Aux_enem != NULL) {
 
-            while (tempEnemigo != NULL) {
-
-                if (tempEnemigo->estado) {
+                if (Aux_enem->estado) {
 
                     // Rebote en los bordes del fondo
-                    if (tempEnemigo->x < centroX + diametro + 15 || tempEnemigo->x > centroX + RX - diametro - 20) {
-                        tempEnemigo->velocidadX = -tempEnemigo->velocidadX;
+                    if (Aux_enem->x < centroX + diametro + 15 || Aux_enem->x > centroX + RX - diametro - 20) {
+                        Aux_enem->velocidadX = -Aux_enem->velocidadX;
                     }
 
-                    if (tempEnemigo->y < centroY + diametro + 15 || tempEnemigo->y > centroY + RY) {
-                        tempEnemigo->velocidadY = -tempEnemigo->velocidadY;
+                    if (Aux_enem->y < centroY + diametro + 15 || Aux_enem->y > centroY + RY) {
+                        Aux_enem->velocidadY = -Aux_enem->velocidadY;
                     }
 
                     // Dibujar el enemigo en amarillo
-                    al_draw_filled_circle(tempEnemigo->x, tempEnemigo->y, diametro / 2, al_map_rgb(255, 255, 0));
+                    al_draw_filled_circle(Aux_enem->x, Aux_enem->y, diametro / 2, al_map_rgb(255, 255, 0));
 
                     // Dibuja la hitbox del enemigo como un contorno para depuración
                     al_draw_rectangle(
-                        tempEnemigo->x - diametro / 2,            // X inicial (izquierda)
-                        tempEnemigo->y - diametro / 2,            // Y inicial (arriba)
-                        tempEnemigo->x + diametro / 2,            // X final (derecha)
-                        tempEnemigo->y + diametro / 2,            // Y final (abajo)
+                        Aux_enem->x - diametro / 2,            // X inicial (izquierda)
+                        Aux_enem->y - diametro / 2,            // Y inicial (arriba)
+                        Aux_enem->x + diametro / 2,            // X final (derecha)
+                        Aux_enem->y + diametro / 2,            // Y final (abajo)
                         al_map_rgb(255, 0, 0),                    // Color rojo para el contorno de la hitbox
                         1                                         // Grosor del contorno
                     );
 
                 }
 
-                tempEnemigo = tempEnemigo->Siguiente;
+                Aux_enem = Aux_enem->Siguiente;
 
      
             }

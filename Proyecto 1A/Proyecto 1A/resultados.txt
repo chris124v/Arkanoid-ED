@@ -66,3 +66,47 @@ Nombre:Chris
 Puntaje: 10
 
 
+Nombre:Chris_
+Puntaje: 625
+
+
+Nombre:Chris_
+Puntaje: 115
+
+
+Nombre:Chris
+Puntaje: 90
+
+
+Nombre:Chris
+Puntaje: 90
+
+
+Nombre:Chris
+Puntaje: 90
+
+
+Nombre:Chris
+Puntaje: 105
+
+
+Nombre:Chris2
+Puntaje: 405
+
+
+Nombre:Andrey
+Puntaje: 130
+
+
+Nombre:Chris_
+Puntaje: 295
+
+
+Nombre:Andrey
+Puntaje: 595
+
+
+Nombre:Chrios
+Puntaje: 1520
+
+

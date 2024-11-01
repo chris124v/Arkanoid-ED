@@ -1,8 +1,11 @@
-//Funciones del juego implementadas posteriormente 
+//Funciones del juego implementadas posteriormente en el juego.h
+
+//Christopher Daniel Vargas Villalta, Carnet: 2024108443
+//Santiago Espinoza Rendon, Carnet: 2024156530
 
 #pragma once
-#define NOMINMAX
 
+//Liberias propios de C++
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
@@ -12,9 +15,7 @@
 #include <time.h>
 #include <algorithm> 
 
-#undef min
-#undef max
-
+//Librerias de allegro 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_font.h>
@@ -24,319 +25,463 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 
+//Inlcude del juego
 #include "Juego.h"
 
+//Esto lo hacemos para evitar problemas con los archivos
 using namespace std;
-#pragma warning(disable:4996);  //Se desactiva alarma en el manejo de archivos
+#pragma warning(disable:4996);  
 
+//Establecemos el area en donde se realizara el juego
 const int ResX = 800;
 const int ResY = 1100;
 const int diametro = 32;
-const int NAVE_ANCHO = 100;  // Ancho deseado de la nave
-const int NAVE_ALTO = 35;
 
+//Estas constantes nos serviran para establecer los tamanos de la nave o barra
+const int nave_ancho = 100;  
+const int nave_alto = 35;
 
+//Este seria el struct de la bola
 typedef struct bola {
 
-    int x;         // Posición en el eje X
-    int y;         // Posición en el eje Y
-    int radio;     // Radio de la bola
-    float velocidadX; // Velocidad en el eje X
-    float velocidadY; // Velocidad en el eje Y
-    int codigo;
-    bool estado;
-    bola* Siguiente;
+    int x;              // Posicion en el eje x
+    int y;              // Posicion en el eje y
+    int radio;          // Radio de la bola
+    float velocidadX;   // Velocidad en el eje x
+    float velocidadY;   // Velocidad en el eje Y        
+    bool estado;        //Estado para saber si esta viva o no
+    bola* Siguiente;    //Establecemos un puntero como lista enlaza
 
 }*Ptrbola;
 
+//Struct de la nave 
 typedef struct nave {
-    float x;         // Posición en el eje X
-    float y;         // Posición en el eje Y
-    int velocidadY;
-    bool estado;
+    float x;         // Posicion en el eje x
+    float y;         // Posicion en el eje y
+    int velocidadX;  //velocidad lateral de la nave
+    bool estado;     //Estado de la nave para saber si esta viva
 };
 
+//Struct del bloque
 typedef struct bloque {
-    float x;         // Posición en el eje X
-    float y;         // Posición en el eje Y
-    bool estado;     // Estado del bloque (activo/inactivo)
-    int codigo;      // Código del bloque
+
+    float x;         // Posicion en el eje x
+    float y;         // Posicion en el eje y
+    bool estado;     // Estado del bloque para ver si se elimino
     int resistencia; // Nivel de resistencia del bloque
     bloque* Siguiente; // Puntero al siguiente bloque en la lista
+
 }*Ptrbloque;
 
+//Struct del enemigo que aparece
 typedef struct enemigo {
 
-    float x;         // Posición en el eje X
-    float y;         // Posición en el eje Y
-    float velocidadX; // Velocidad en el eje X
-    float velocidadY; // Velocidad en el eje Y
-    int codigo;
-    int tipo;
-    bool estado;
-    enemigo* Siguiente;
+    float x;         // Posicion en el eje x
+    float y;         // Posicion en el eje y
+    float velocidadX; // Velocidad en el eje x
+    float velocidadY; // Velocidad en el eje y
+    int tipo;         //Tipo de enemigo que va a aparecer
+    bool estado;      //Estado para ver si esta vivo o no
+    enemigo* Siguiente; //Establecemos la lista enlazada
 
 }*Ptrenemigo;
 
+//En esta funcion inicializamos la nave 
 void Inicializar_nave(nave& Jugador, int x) {
 
-    Jugador.x = ResX / 2 - 40;
-    Jugador.y = ResY - 300;
-    Jugador.velocidadY = 5;
+    
+    Jugador.x = ResX / 2 - 40;  //Posicion en x segun el area
+    Jugador.y = ResY - 300;     //Posicion en y segun el area
+    Jugador.velocidadX = 5;     //Rapidez de movimiento lateral
     Jugador.estado = true; // Activa la nave para que se muestre
 
 };
 
+//Funcion de inicializar el bloque
 void inicializar_bloque(Ptrbloque& bloques, int i, int x) {
 
-    bloques->y = ((x / 11) + 1) * diametro / 2 * 4;
-    bloques->estado = true;
-    bloques->codigo = i;
+    bloques->y = ((x / 11) + 1) * diametro / 2 * 4; //Establecemos la posicion en el y segun el diametro del juego
+    bloques->estado = true; //Inicialmente el bloque esta activo o vivo
     bloques->resistencia = rand() % 5 + 1; // Asignar un nivel de resistencia aleatorio entre 1 y 5
-    bloques->Siguiente = NULL;
+    bloques->Siguiente = NULL; //Establecemos el null de la lista enlazada
 }
 
+//Funcion de inicializar el enemigo 
 void inicializar_enemigo(Ptrenemigo& enemigo, int i, int t, int x) {
 
-    enemigo->x = x / 2 - ResX / 2 + (i % 11) * ((ResX - 200) / 10) + 100;
-    enemigo->y = ((i / 11) + 1) * diametro / 2 * 4;
-    enemigo->velocidadX = 5;
-    enemigo->velocidadY = 5;
-    enemigo->codigo = i;
-    enemigo->tipo = t;
-    enemigo->estado = true;
-    enemigo->Siguiente = NULL;
+    enemigo->x = x / 2 - ResX / 2 + (i % 11) * ((ResX - 200) / 10) + 100;  //Establece posicion en x del enemigo
+    enemigo->y = ((i / 11) + 1) * diametro / 2 * 4; //Posicion en y segun el area
+    enemigo->velocidadX = 5;   //Velocididad del enemigo en x 
+    enemigo->velocidadY = 5;   //Velocidad del enemigo en Y
+    enemigo->tipo = t;         //Tipo del enemigo lo definimos despues
+    enemigo->estado = true;     //Inicialmente esta vivo
+    enemigo->Siguiente = NULL;  //Establecemos la lista enlazada
 
 }
 
+//Funcion para dibujar la nave con un bitmap, usamos parametros posteriormente utilizables en juego
 void dibujar_nave(nave& jugador, ALLEGRO_BITMAP* nave_bitmap, int centroX, int centroY) {
 
-    if (jugador.estado) {  // Verifica si la nave está activa
-        // Obtener dimensiones originales del bitmap
+    //Si la nave esta activa
+    if (jugador.estado) {  
+
+        // Determinamos el tamano original de la nave
         int bitmap_ancho = al_get_bitmap_width(nave_bitmap);
         int bitmap_alto = al_get_bitmap_height(nave_bitmap);
 
-        // Dibujar el bitmap escalado en la posición de la nave
-        al_draw_scaled_bitmap(nave_bitmap,
-            0, 0,                          // Coordenadas fuente X,Y
-            bitmap_ancho, bitmap_alto,     // Ancho y alto fuente
-            jugador.x + centroX,           // Posición destino X
-            jugador.y + centroY,           // Posición destino Y
-            NAVE_ANCHO, NAVE_ALTO,         // Ancho y alto destino
-            0                              // Flags
-        );
+        // Se dibuja el bitmap de la nave con las especificaciones del tamano, tambien tomamos las dimensiones de la nave que se iniciliazaron como constantes
+        al_draw_scaled_bitmap(nave_bitmap, 0, 0, bitmap_ancho, bitmap_alto, jugador.x + centroX, jugador.y + centroY, nave_ancho, nave_alto, 0);
     }
 }
 
+//Funcion para formar los bloques segun 10 niveles con diferentes patrones de bloques
 void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) {
-    // Factor de escala y dimensiones escaladas del bloque
-    const float escalaFactor = 0.5;
-    const int anchoBloque = al_get_bitmap_width(bloques2) * escalaFactor;
-    const int altoBloque = al_get_bitmap_height(bloques2) * escalaFactor;
 
-    // Define el espacio entre los bloques
-    const int espacioHorizontal = 0; // Ajusta según necesidad
-    const int espacioVertical = 0;   // Ajusta según necesidad
+    //Constantes para escalar los bloques y hacer la generacion
+    const float escalar_b = 0.5;
+    const int ancho_b = al_get_bitmap_width(bloques2) * escalar_b;
+    const int alto_b = al_get_bitmap_height(bloques2) * escalar_b;
+    const int bloques_filas = 8; //Bloques por cada fila
 
-    // Número de bloques por fila
-    const int numBloquesPorFila = 8;
+    int centrar_f = (ResX - (bloques_filas * ancho_b)) / 2; //Centrar horizontalmente la fila de bloques
+    int yInicial = 100; //Posicion en vertical inicial
+    int filasLimite = (nivel == 3) || (nivel == 9) ? 7 : 5; //Ajustamos el numero de filas segun cada nivel
 
-    // Posición inicial de los bloques para centrarlos en el área de juego
-    int xInicial = (ResX - (numBloquesPorFila * anchoBloque + (numBloquesPorFila - 1) * espacioHorizontal)) / 2;
-    int yInicial = 100;
+    // Ciclo para crear bloques segun filas y columnas
+    for (int i = 0; i < bloques_filas * filasLimite; i++) {
 
-    for (int i = 0; i < numBloquesPorFila * 5; i++) {
+        //Calculamos la fila y la columna para cada bloque
+        int fila = i / bloques_filas;
+        int columna = i % bloques_filas;
+        int xInicial = centrar_f;
+        int bloques_en_fila = bloques_filas;
+
+        //Estos serian dos casos especificos de formaciones para los bloques
+        
+        //  Nivel 5 de piramide
+        if (nivel == 5) {
+
+            bloques_en_fila = bloques_filas - fila;  // Disminuye los bloques en cada fila
+            xInicial = (ResX - (bloques_en_fila * ancho_b)) / 2; //Basicamente la cantidad de bloques en cada fila
+            if (columna >= bloques_en_fila) continue;  // Salta las columnas fuera del límite
+        }
+
+        // Nivel 7 alternacion de bloques
+        if (nivel == 7) {
+
+            bloques_en_fila = (bloques_filas + 1) / 2;  // Mitad de los bloques en alternancia
+            xInicial = (ResX - ((bloques_en_fila * 2 - 1) * ancho_b)) / 2;  // Asegura que los bloques no se desborden
+            if (columna % 2 != 0) continue;  // Desactiva bloques en posiciones pares
+        }
+
+        // Crear y posicionar el bloque como tal seria como la inicializacion
         Ptrbloque nuevoBloque = new bloque;
-        nuevoBloque->x = xInicial + (i % numBloquesPorFila) * (anchoBloque + espacioHorizontal);
-        nuevoBloque->y = yInicial + (i / numBloquesPorFila) * (altoBloque + espacioVertical);
+
+        //Establecemos posiciones x y y del nuevo bloque basandonos en los niveles, filas y columnas
+        nuevoBloque->x = xInicial + (nivel == 7 ? (columna / 2) * 2 * ancho_b : columna * ancho_b);
+        nuevoBloque->y = yInicial + fila * alto_b;
 
         nuevoBloque->estado = true;
-        nuevoBloque->resistencia = rand() % 5 + 1; // Resistencia aleatoria entre 1 y 5
+        nuevoBloque->resistencia = rand() % 5 + 1;
         nuevoBloque->Siguiente = NULL;
 
-        // Condiciones para las diferentes formaciones
+        // Configuración general para cada nivel
+
+        // Nivel 1 filas completas
         if (nivel == 1) {
-            // Nivel 1: Filas completas de bloques
-        }
-        else if (nivel == 2) {
-            // Nivel 2: Zigzag
-            if (i % 2 == 0) nuevoBloque->y += diametro / 2;
-        }
-        else if (nivel == 3) {
-            // Nivel 3: Pirámide
-            if (i < 3 || (i >= 8 && i < 11) || (i >= 18 && i < 21)) nuevoBloque->estado = false;
-        }
-        else if (nivel == 4) {
-            // Nivel 4: Diamante
-            if (i < 2 || i > 11 && i < 14 || i > 27) nuevoBloque->estado = false;
+            
         }
 
-        // Añadir el nuevo bloque a la lista
-        if (!bloques) {
-            bloques = nuevoBloque;
+        //Nivel 2 en zigzag
+        else if (nivel == 2) {
+
+            if (columna % 2 == 0) nuevoBloque->y += alto_b / 2; //Desplazamos los bloques hacia abajo
+
         }
+
+        // Nivel 3 alternando filas y dejando las filas pares vacias y la ultima fila activa
+        else if (nivel == 3) {
+            
+            if (fila % 2 != 0) {
+                nuevoBloque->estado = false;
+            }
+        }
+
+        // Nivel 4 diagonal mas ancha con tres bloques de ancho en cada escalon
+        else if (nivel == 4) {
+            
+            if ((columna != fila) && (columna != fila + 1) && (columna != fila + 2) && (columna != fila + 3)) {
+                nuevoBloque->estado = false;
+            }
+        }
+
+        //Saltamos a nivel 6 porque ya hicimos el 5 que era especifico
+        else if (nivel == 6) {
+
+            // Ajustamos cada bloque para que sea del tamano de la piramide
+            if ((fila == 0 && (columna < 2 || columna > 5)) ||
+                (fila == 1 && (columna < 1 || columna > 6)) ||
+                (fila == 3 && (columna < 1 || columna > 6)) ||
+                (fila == 4 && (columna < 2 || columna > 5))) {
+                nuevoBloque->estado = false;
+            }
+        }
+
+        //Pasamos al nivel 8 porque ya hicimos el 7
+        else if (nivel == 8) {
+            
+            //Este corresponde a un patron disperso por columnas
+            if ((columna < 2 || columna > 5) && fila < 3) nuevoBloque->estado = false;
+        }
+
+        // Nivel 9 filas y columnas alternas de bloques
+        if (nivel == 9) {
+            bool esBloqueActivo = (fila % 2 == 0) ? (columna % 2 == 0) : (columna % 2 != 0);
+            if (!esBloqueActivo) continue;
+        }
+
+        // Nivel 1o (ultim)
+        if (nivel == 10) {
+            if (columna < 2 || columna > 5) {  // Bloques activos solo en bordes
+                nuevoBloque->estado = (fila % 3 != 0);  // Espaciado irregular cada tercera fila
+            }
+            else {
+                nuevoBloque->estado = true;
+            }
+        }
+
+        // Anadir el nuevo bloque a la lista
+
+        if (nuevoBloque->estado) {  // Solo anadimos bloques activos o que esten vivos
+            
+            //Verificamos si la lista esta vacia anadimos este bloque
+            if (!bloques) {
+                bloques = nuevoBloque;
+            }
+
+            //Si no se ha anadido lo recorremos y agregamos al final como si de una cola se tratase
+            else {
+                Ptrbloque temp = bloques;
+                while (temp->Siguiente) temp = temp->Siguiente;
+                temp->Siguiente = nuevoBloque;
+            }
+        }
+
         else {
-            Ptrbloque temp = bloques;
-            while (temp->Siguiente) temp = temp->Siguiente;
-            temp->Siguiente = nuevoBloque;
+            delete nuevoBloque;  // Libera memoria de los bloques inactivos
         }
     }
 }
 
+//Funcion de inicializar la bola, tomamos como parametros la bola, nave y el radio de la bola
 void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
 
-    bola = new struct bola; // Asignar memoria para la nueva bola
-    bola->x = jugador.x + 600; // Posición inicial en la nave
-    bola->y = jugador.y - 100; // Colocarla justo encima de la nave
-    bola->radio = 7; // Establecer el radio de la bola
-    bola->velocidadX = rand() % 2 + 1;// Velocidad aleatoria en X; // Velocidad inicial en X
-    bola->velocidadY = - (rand() % 2 + 1) ; // Velocidad inicial en Y (hacia arriba)
-    bola->codigo = 0; // Puedes asignar un código o cualquier otro valor que necesites
-    bola->estado = true; // La bola está activa
-    bola->Siguiente = NULL; // Inicializar el puntero siguiente
+    //Creamos una nueva bola
+    bola = new struct bola; 
+
+    //Aqui establecemos la posicion x y y de la bola para que aparezca un poco mas arriba de la nave
+    bola->x = jugador.x + 600; 
+    bola->y = jugador.y - 100; 
+
+    //Este seria el radio de la bola
+    bola->radio = 7; 
+
+    //Finalmente estarian velocidades aleatorias para cada pasada del juego
+    bola->velocidadX = rand() % 2 + 1;
+    bola->velocidadY = - (rand() % 2 + 1) ; 
+    
+    bola->estado = true; // La bola esta viva
+    bola->Siguiente = NULL; // Lista enlazada
 }
 
+//Funcion de la colision de la bola, toma como parametros: Bola, bloques, jugador, enemigos, vidas, puntos, coordenadas x y y, tamano actual de los bloques.
 void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos) {
 
-    // Definir el tamaño escalado de los bloques
+    // Este seria el estandar del tamano del bloque para la hitbox de colision
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
     const int altoBloqueEscalado = al_get_bitmap_height(bloques2) / 2 - 5;
 
     // Radio de la bola
     const int radioBola = balin->radio;
 
-    // Limitar el movimiento a los bordes del área centrada
+    // Limitar el movimiento a los bordes designados
+
+    //Aqui establecemos el movimiento de la bola segun los bordes
+
+    /*
+    Este seria el de la parte izquierda, basicamente si la posicion de la
+    bola menos el radio de la bola es menor o igual al centroX que es el borde
+    designado va a invertir la velocidad en x de la bola, este proceso se repite 
+    para todos los bordes
+    */
+
+    //Caso de la izquierda
     if (balin->x - radioBola <= centroX) {
-        balin->x = centroX + radioBola; // Ajustar la posición para no salir
-        balin->velocidadX = -balin->velocidadX; // Cambiar dirección
+        balin->x = centroX + radioBola; // Ajustar la posicion de la bola
+        balin->velocidadX = -balin->velocidadX; // Cambiar direccion segun pega
     }
+
+    //Caso de la derecha
     if (balin->x + radioBola >= centroX + ResX) {
-        balin->x = centroX + ResX - radioBola; // Ajustar la posición para no salir
-        balin->velocidadX = -balin->velocidadX; // Cambiar dirección
+        balin->x = centroX + ResX - radioBola; // Ajustar la posicion
+        balin->velocidadX = -balin->velocidadX; // Cambiar direccion
     }
+
+    //Caso del borde superior
     if (balin->y - radioBola <= centroY) {
         balin->y = centroY + radioBola; // Ajustar la posición para no salir
         balin->velocidadY = -balin->velocidadY; // Cambiar dirección
     }
+
+    //Este seria el caso del borde inferior en donde si la bola baja se reducen las vidas
     if (balin->y + radioBola >= centroY + ResY) {
+
         vidas--;  // Resta una vida
         balin->x = jugador.x + centroX;  // Reposiciona en la zona centrada
         balin->y = jugador.y + centroY - 10; // Reposicionar justo encima de la nave
-        balin->velocidadY = -fabs(balin->velocidadY); // Invertir dirección
+        balin->velocidadY = -fabs(balin->velocidadY); // Invertir direccion
+
     }
 
-    // Verificar colisión con bloques
+    // Verificar colision con bloques llamamos a la struct
     Ptrbloque bloqueActual = bloques;
 
-
+    //Recorrer la lista enlazada bloques hasta llegar NULL
     while (bloqueActual != NULL) {
 
+        //Si el bloque aun se encuentra vivo
         if (bloqueActual->estado) {
 
-            // Verifica colisión considerando el radio de la bola
-            if (balin->x + radioBola >= bloqueActual->x + centroX &&
-                balin->x - radioBola <= bloqueActual->x + centroX + anchoBloqueEscalado &&
+            // Aca determinamos si la bola choca con el bloque actual considerando todos los dados
+            if (balin->x + radioBola >= bloqueActual->x + centroX && balin->x - radioBola <= bloqueActual->x + centroX + anchoBloqueEscalado &&
                 balin->y + radioBola >= bloqueActual->y + centroY &&
                 balin->y - radioBola <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
-                // Colisión detectada, manejar interacción
 
+                // En caso de que se detecte una colision se va a reducir la resistencia del bloque para que pueda ser destruido
                 bloqueActual->resistencia--;
+
+                //En caso de que la resistencia llegue a 0
                 if (bloqueActual->resistencia <= 0) {
-                    bloqueActual->estado = false; // Desactivar bloque si resistencia llega a 0
+
+                    //El bloque con el que pego desaparece
+                    bloqueActual->estado = false; 
 
                 }
 
-                // Rebote de la bola al chocar con el bloque
-                float deltaX = (balin->x + radioBola) - (bloqueActual->x + centroX);
-                float deltaY = (balin->y + radioBola) - (bloqueActual->y + centroY);
+                //Por cada bloque eliminado se suma 5 a la puntuacion general
+                puntos += 5;
 
-                if (fabs(deltaX) < fabs(deltaY)) {
-                    balin->velocidadY = -balin->velocidadY; // Cambiar dirección vertical
-                    balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustar posición para evitar el "pegado"
+                // Rebote de la bola al chocar con el bloque segun las dimensiones
+                float choqueX = (balin->x + radioBola) - (bloqueActual->x + centroX);
+                float choqueY = (balin->y + radioBola) - (bloqueActual->y + centroY);
+
+                //Revisamos con fabs que es valor absoluto donde se da el choque
+                if (fabs(choqueX) < fabs(choqueY)) {
+                    balin->velocidadY = -balin->velocidadY; // Cambiar direccion vertical
+                    balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustar posicion de la bola y su velocidad ajustamos un poco la velocidad
                 }
+
+                //Aqui se realiza lo mismo pero para el eje horizontal
                 else {
-                    balin->velocidadX = -balin->velocidadX; // Cambiar dirección horizontal
-                    balin->x += (balin->velocidadX > 0) ? -1 : 1; // Ajustar posición para evitar el "pegado"
+                    balin->velocidadX = -balin->velocidadX; // Cambiar direccion horizontal
+                    balin->x += (balin->velocidadX > 0) ? -1 : 1; // Ajustamos la posicion
                 }
-                break; // Termina la comprobación una vez que se detecta una colisión
+
+                break; 
             }
         }
-        bloqueActual = bloqueActual->Siguiente; // Avanzar al siguiente bloque
+
+        // Avanzar al siguiente bloque
+        bloqueActual = bloqueActual->Siguiente;
     }
 
+    // Esta seria la colision pero con la nave 
     if (jugador.estado) {
-        // Calcular las posiciones de la hitbox de la nave
-        float naveIzquierda = jugador.x + centroX;
-        float naveDerecha = naveIzquierda + NAVE_ANCHO;
-        float naveSuperior = jugador.y + centroY;
-        float naveInferior = naveSuperior + NAVE_ALTO;
 
-        // Verificar si la bola está en la hitbox de la nave
-        if (balin->x + radioBola >= naveIzquierda &&
-            balin->x - radioBola <= naveDerecha &&
-            balin->y + radioBola >= naveSuperior + 10 &&
-            balin->y - radioBola <= naveInferior ) {
+        // Calcular las posiciones de la hitbox de la nave segun su posicion
+        float nave_izqui = jugador.x + centroX;
+        float nave_dere = nave_izqui + nave_ancho;
+        float nave_superior = jugador.y + centroY;
+        float nave_inf = nave_superior + nave_alto;
 
-            // Colisión detectada, manejar interacción
-            balin->velocidadY = -balin->velocidadY; // Cambiar dirección vertical
-            balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustar posición para evitar el "pegado"
+        // Verificar si la bola esta en la hitbox de la nave, anadimos +10 para si pegue justo en la nave
+        if (balin->x + radioBola >= nave_izqui && balin->x - radioBola <= nave_dere && balin->y + radioBola >= nave_superior + 10 &&
+            balin->y - radioBola <= nave_inf) {
 
-            // Determina si la colisión es en el borde izquierdo o derecho de la nave
-            if (balin->x < naveIzquierda + NAVE_ANCHO / 4) { // Colisión en el borde izquierdo
+            //En caso de que si haya una colision en el eje y
+            balin->velocidadY = -balin->velocidadY; // Se cambia la direccion en vertical
+            balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustamos la posicion de la bola segun velocidad
+
+            // Determina si la colision es en el borde izquierdo o derecho de la nave
+            if (balin->x < nave_izqui + nave_ancho / 4) { // Colision en el borde izquierdo
                 balin->velocidadX = -abs(balin->velocidadX); // Rebote hacia la izquierda
             }
-            else if (balin->x > naveDerecha - NAVE_ANCHO / 4) { // Colisión en el borde derecho
+
+            //Esta seria la del derecho
+            else if (balin->x > nave_dere - nave_ancho / 4) { // Colision en el borde derecho
                 balin->velocidadX = abs(balin->velocidadX); // Rebote hacia la derecha
             }
 
-            // Invertir la dirección vertical
+            // Invertir la dirección vertical de la bola, usamos abs para el valor absoluto
             balin->velocidadY = -abs(balin->velocidadY);
 
         }
     }
 
-    // Nueva implementación de colisión con enemigos
+    // Este seria el apartado de como colisiona con los enemigos
+
     Ptrenemigo enemigoActual = enemigos;
+
+    // Se recorre toda la lista enlazada 
     while (enemigoActual != NULL) {
+
+        //En caso de que el enemigo este vivo
         if (enemigoActual->estado) {
-            // Crear una hitbox rectangular para el enemigo, igual que en tu código de dibujo
-            float enemigoLeft = enemigoActual->x - diametro / 2;
-            float enemigoRight = enemigoActual->x + diametro / 2;
-            float enemigoTop = enemigoActual->y - diametro / 2;
-            float enemigoBottom = enemigoActual->y + diametro / 2;
 
-            // Verificar si la bola colisiona con la hitbox del enemigo
-            if (balin->x + radioBola >= enemigoLeft &&
-                balin->x - radioBola <= enemigoRight &&
-                balin->y + radioBola >= enemigoTop &&
-                balin->y - radioBola <= enemigoBottom) {
+            //Establecemos una hitbox que tome en cuenta la dimensiones del enemigo
+            float enemigo_izqui = enemigoActual->x - diametro / 2;
+            float enemigo_dere = enemigoActual->x + diametro / 2;
+            float enemigo_arri = enemigoActual->y - diametro / 2;
+            float enemigo_abajo = enemigoActual->y + diametro / 2;
 
-                // Desactivar el enemigo
+            // Verificar si la bola colisiona con la hitbox del enemigo segun los datos establecidos
+            if (balin->x + radioBola >= enemigo_izqui && balin->x - radioBola <= enemigo_dere &&
+                balin->y + radioBola >= enemigo_arri &&
+                balin->y - radioBola <= enemigo_abajo) {
+
+                // Desactivar el enemigo o eliminarlo
                 enemigoActual->estado = false;
+
+                //Por cada enemigo eliminado se suman 10 puntos
                 puntos += 10;
 
-                // Determinar desde qué dirección vino la colisión
-                float deltaX = balin->x - enemigoActual->x;
-                float deltaY = balin->y - enemigoActual->y;
+                // Determinar desde que direccion vino la colision
+                float cayoX = balin->x - enemigoActual->x;
+                float cayoY = balin->y - enemigoActual->y;
 
                 // Ajustar la dirección de rebote basado en el punto de impacto
-                if (fabs(deltaX) > fabs(deltaY)) {
-                    // Colisión más horizontal
+                if (fabs(cayoX) > fabs(cayoY)) {
+
+                    // Colision horizontal
                     balin->velocidadX = -balin->velocidadX;
                 }
+
+                //Colision en el caso vertical 
                 else {
-                    // Colisión más vertical
+                    // Colision vertical
                     balin->velocidadY = -balin->velocidadY;
                 }
 
-                // Ajustar la posición de la bola para evitar que se quede "pegada"
+                // Ajustamos la posicion del balin segun la velocidad
                 balin->x += balin->velocidadX;
                 balin->y += balin->velocidadY;
 
-                break; // Salir del bucle después de la colisión
+                break; 
             }
         }
+
+        //Pasamos al siguiente enemigo
         enemigoActual = enemigoActual->Siguiente;
     }
 
@@ -347,21 +492,28 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 
 
 
+void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque bloques, int posicionNaveY, int centroY, int centroX) {
+    // Parámetros del área jugable basados en los valores proporcionados
+    const int margenSuperior = centroY + diametro + 300;            // Borde superior justo debajo de los bloques
+    const int margenInferior = posicionNaveY - 50;                 // Borde inferior justo encima de la nave
+    const int margenIzquierdo = centroX + diametro + 15;           // Borde izquierdo de la zona jugable
+    const int margenDerecho = centroX + ResX - diametro - 20;      // Borde derecho de la zona jugable
+    const int anchoEnemigo = diametro;                             // Ancho del enemigo
+    const int altoEnemigo = diametro;                              // Altura del enemigo
 
-
-void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel) {
-    // Limitar la cantidad de enemigos generados a un máximo de 4 o 5
-    // Máximo 5 enemigos por nivel
-
+    // Generar enemigos dentro de los límites definidos
     for (int i = 0; i < cantidad; ++i) {
 
         Ptrenemigo nuevoEnemigo = new enemigo;
         int tipo = rand() % 3; // Selección aleatoria del tipo de enemigo (0 = Adherido, 1 = Rebote, 2 = Lineal)
         inicializar_enemigo(nuevoEnemigo, i, tipo, ResX);
 
-        // Posición inicial aleatoria en la parte superior de la pantalla
-        nuevoEnemigo->x = (ResX / 1.2) + (rand() % (ResX / 2 - diametro)); // Spawn en la mitad derecha // X entre 0 y el ancho de pantalla menos el diámetro
-        nuevoEnemigo->y = rand() % (ResY / 2);        // Y entre 0 y la mitad de la pantalla
+        // Generar posición aleatoria dentro de la zona delimitada
+        int xPos = margenIzquierdo + (rand() % (margenDerecho - margenIzquierdo - anchoEnemigo));
+        int yPos = margenSuperior + (rand() % (margenInferior - margenSuperior - altoEnemigo));
+
+        nuevoEnemigo->x = xPos;
+        nuevoEnemigo->y = yPos;
         nuevoEnemigo->estado = true;                  // Enemigo inicia activo
         nuevoEnemigo->Siguiente = nullptr;
 
@@ -461,36 +613,76 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
     }
 }
 
+//Funcion que revisa la lista enlazada de bloques
+bool quedanBloques(Ptrbloque bloques) {
 
-void CrearArchivo(char* puntaje, char* nombre)//Se crea la función CrearArchivo que guarda el nombre y el puntaje en un archivo en memoria secundaria
+    //Establecemos un auxiliar para recorrer la lista enlazada
+    Ptrbloque Aux = bloques;
+
+    //Mientras no se llegue al final
+    while (Aux != NULL) {
+
+        //Si el bloque esta activo
+        if (Aux->estado) {
+            return true; //Retorna true
+        }
+
+        //Seguimos recorriendo la lista enlazada
+        Aux = Aux->Siguiente;
+    }
+
+    //Esto en caso de que no queden bloques activos
+    return false;
+}
+
+//Funcion creararchivo que crea un archivo con un puntaje general y el nombre
+void CrearArchivo(char* puntaje, char* nombre)
 {
     FILE* archivo;
-    archivo = fopen("resultados.txt", "a");
+    archivo = fopen("resultados.txt", "a"); //Abre el archivo llamado resultados
 
+    //Si no se puede encontrar se indica
     if (NULL == archivo) {
         fprintf(stderr, "No se pudo crear archivo %s.\n", "resultados.txt");
         exit(-1);
     }
+
+    //En caso contrario escribe nombre y puntaje en el archivo
     else {
         fprintf(archivo, "Nombre:%s\n", nombre);
         fprintf(archivo, "Puntaje: %s\n", puntaje);
         fprintf(archivo, "\n\n");
     }
+
+    //Cerramos el archivo
     fclose(archivo);
 }
 
-void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)//Se carga el archivo en memoria secundaria a pantalla con el puntaje y nombre escritos en el display
-{
+//Se carga el archivo en memoria secundaria a pantalla con el puntaje y nombre escritos en el display
+void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
+{   
+    //Establecemos limites para nombre y puntaje
     char nombre[40];
     char puntaje[10];
     int i = 0;
     int e = 0;
+
     FILE* archivo;
+
+    //Abre el archivo en tipo read
     archivo = fopen("resultados.txt", "r");
+
+    //Si el archivo es diferente de null
     if (archivo != NULL) {
+        
+        //Recorremos hasta el final del archivo
         while (!feof(archivo)) {
+
+            //Leemos nombre y puntaje
             fscanf(archivo, "Nombre:%s\n", nombre);
             fscanf(archivo, "Puntaje: %s\n", puntaje);
+
+            //Leemos tanto nombre como puntaje y lo imprimimos
             if (inicio <= i && i < inicio + 4) {
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Nombre: ");
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, nombre);
@@ -498,21 +690,16 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)//Se carga el 
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, puntaje);
                 e++;
             }
+
+            //Se hace para todos los existentes
             i++;
         }
+
+        //Cerramos el archivo
         fclose(archivo);
     }
 
 }
 
-bool quedanBloques(Ptrbloque bloques) {
-    Ptrbloque temp = bloques;
-    while (temp != NULL) {
-        if (temp->estado) {
-            return true; // Aún quedan bloques activos
-        }
-        temp = temp->Siguiente;
-    }
-    return false; // No quedan bloques activos
-}
+
 
