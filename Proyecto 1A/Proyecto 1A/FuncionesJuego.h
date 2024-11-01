@@ -25,6 +25,7 @@
 #include <allegro5/allegro_acodec.h>
 
 #include "Juego.h"
+
 using namespace std;
 #pragma warning(disable:4996);  //Se desactiva alarma en el manejo de archivos
 
@@ -33,6 +34,7 @@ const int ResY = 1100;
 const int diametro = 32;
 const int NAVE_ANCHO = 100;  // Ancho deseado de la nave
 const int NAVE_ALTO = 35;
+
 
 typedef struct bola {
 
@@ -137,11 +139,11 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) 
     const int espacioVertical = 0;   // Ajusta según necesidad
 
     // Número de bloques por fila
-    const int numBloquesPorFila = 7;
+    const int numBloquesPorFila = 8;
 
     // Posición inicial de los bloques para centrarlos en el área de juego
     int xInicial = (ResX - (numBloquesPorFila * anchoBloque + (numBloquesPorFila - 1) * espacioHorizontal)) / 2;
-    int yInicial = 50;
+    int yInicial = 100;
 
     for (int i = 0; i < numBloquesPorFila * 5; i++) {
         Ptrbloque nuevoBloque = new bloque;
@@ -168,94 +170,6 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) 
             // Nivel 4: Diamante
             if (i < 2 || i > 11 && i < 14 || i > 27) nuevoBloque->estado = false;
         }
-        else if (nivel == 5) {
-            // Nivel 5: X en el centro
-            if (i % 3 != 0) nuevoBloque->estado = false;
-        }
-        else if (nivel == 6) {
-            // Nivel 6: Dos filas de bloques dobles en el centro
-            if (i / numBloquesPorFila < 2 || i / numBloquesPorFila > 3) nuevoBloque->estado = false;
-        }
-        else if (nivel == 7) {
-            // Nivel 7: Checkerboard
-            if ((i / numBloquesPorFila) % 2 == 0) {
-                if (i % 2 == 1) nuevoBloque->estado = false;
-            }
-            else {
-                if (i % 2 == 0) nuevoBloque->estado = false;
-            }
-        }
-        else if (nivel == 8) {
-            // Nivel 8: Columna central
-            if (i % numBloquesPorFila != numBloquesPorFila / 2) nuevoBloque->estado = false;
-        }
-        else if (nivel == 9) {
-            // Nivel 9: Filas alternadas (una sí, una no)
-            if (i / numBloquesPorFila % 2 == 1) nuevoBloque->estado = false;
-        }
-        else if (nivel == 10) {
-            // Nivel 10: Bloques en las esquinas
-            if (i < numBloquesPorFila || i >= numBloquesPorFila * 4) nuevoBloque->estado = true;
-            else nuevoBloque->estado = false;
-        }
-        else if (nivel == 11) {
-            // Nivel 11: Hileras diagonales
-            if ((i % numBloquesPorFila + i / numBloquesPorFila) % 2 != 0) nuevoBloque->estado = false;
-        }
-        else if (nivel == 12) {
-            // Nivel 12: Bloques en forma de "U"
-            if (i / numBloquesPorFila == 0 || i / numBloquesPorFila == 4 || (i % numBloquesPorFila == 0 || i % numBloquesPorFila == numBloquesPorFila - 1)) {
-                nuevoBloque->estado = true;
-            }
-            else {
-                nuevoBloque->estado = false;
-            }
-        }
-        else if (nivel == 13) {
-            // Nivel 13: Esquinas y centro
-            if ((i % numBloquesPorFila == 0 || i % numBloquesPorFila == numBloquesPorFila - 1) && (i / numBloquesPorFila == 0 || i / numBloquesPorFila == 4)) {
-                nuevoBloque->estado = true;
-            }
-            else {
-                nuevoBloque->estado = false;
-            }
-        }
-        else if (nivel == 14) {
-            // Nivel 14: Flecha hacia abajo
-            if (i < 3 || (i >= 8 && i < 10) || i == 16) nuevoBloque->estado = false;
-        }
-        else if (nivel == 15) {
-            // Nivel 15: Espiral hacia adentro
-            if (i % 4 == 0 || i % 5 == 0) nuevoBloque->estado = false;
-        }
-        else if (nivel == 16) {
-            // Nivel 16: Triángulo inverso
-            if (i < 2 || (i >= 4 && i < 7) || (i >= 11 && i < 16)) nuevoBloque->estado = true;
-            else nuevoBloque->estado = false;
-        }
-        else if (nivel == 17) {
-            // Nivel 17: Zigzag denso
-            if (i % 3 != 1) nuevoBloque->estado = true;
-            else nuevoBloque->estado = false;
-        }
-        else if (nivel == 18) {
-            // Nivel 18: Tres columnas
-            if (i % numBloquesPorFila == 2 || i % numBloquesPorFila == 4) nuevoBloque->estado = true;
-            else nuevoBloque->estado = false;
-        }
-        else if (nivel == 19) {
-            // Nivel 19: Hileras de dos en dos
-            if ((i / numBloquesPorFila) % 2 != 0) nuevoBloque->estado = false;
-        }
-        else if (nivel == 20) {
-            // Nivel 20: Marco de bloques
-            if (i / numBloquesPorFila == 0 || i / numBloquesPorFila == 4 || i % numBloquesPorFila == 0 || i % numBloquesPorFila == numBloquesPorFila - 1) {
-                nuevoBloque->estado = true;
-            }
-            else {
-                nuevoBloque->estado = false;
-            }
-        }
 
         // Añadir el nuevo bloque a la lista
         if (!bloques) {
@@ -272,17 +186,17 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) 
 void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
 
     bola = new struct bola; // Asignar memoria para la nueva bola
-    bola->x = jugador.x; // Posición inicial en la nave
-    bola->y = jugador.y - 10; // Colocarla justo encima de la nave
+    bola->x = jugador.x + 600; // Posición inicial en la nave
+    bola->y = jugador.y - 100; // Colocarla justo encima de la nave
     bola->radio = 7; // Establecer el radio de la bola
-    bola->velocidadX = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1); // Velocidad aleatoria en X; // Velocidad inicial en X
-    bola->velocidadY = (rand() % 3 + 1) * (rand() % 2 == 0 ? -1 : 1);; // Velocidad inicial en Y (hacia arriba)
+    bola->velocidadX = rand() % 2 + 1;// Velocidad aleatoria en X; // Velocidad inicial en X
+    bola->velocidadY = - (rand() % 2 + 1) ; // Velocidad inicial en Y (hacia arriba)
     bola->codigo = 0; // Puedes asignar un código o cualquier otro valor que necesites
     bola->estado = true; // La bola está activa
     bola->Siguiente = NULL; // Inicializar el puntero siguiente
 }
 
-void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2) {
+void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos) {
 
     // Definir el tamaño escalado de los bloques
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
@@ -313,8 +227,12 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 
     // Verificar colisión con bloques
     Ptrbloque bloqueActual = bloques;
+
+
     while (bloqueActual != NULL) {
+
         if (bloqueActual->estado) {
+
             // Verifica colisión considerando el radio de la bola
             if (balin->x + radioBola >= bloqueActual->x + centroX &&
                 balin->x - radioBola <= bloqueActual->x + centroX + anchoBloqueEscalado &&
@@ -322,9 +240,11 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                 balin->y - radioBola <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
                 // Colisión detectada, manejar interacción
+
                 bloqueActual->resistencia--;
                 if (bloqueActual->resistencia <= 0) {
                     bloqueActual->estado = false; // Desactivar bloque si resistencia llega a 0
+
                 }
 
                 // Rebote de la bola al chocar con el bloque
@@ -355,13 +275,69 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
         // Verificar si la bola está en la hitbox de la nave
         if (balin->x + radioBola >= naveIzquierda &&
             balin->x - radioBola <= naveDerecha &&
-            balin->y + radioBola >= naveSuperior &&
-            balin->y - radioBola <= naveInferior) {
+            balin->y + radioBola >= naveSuperior + 10 &&
+            balin->y - radioBola <= naveInferior ) {
 
             // Colisión detectada, manejar interacción
             balin->velocidadY = -balin->velocidadY; // Cambiar dirección vertical
             balin->y += (balin->velocidadY > 0) ? -1 : 1; // Ajustar posición para evitar el "pegado"
+
+            // Determina si la colisión es en el borde izquierdo o derecho de la nave
+            if (balin->x < naveIzquierda + NAVE_ANCHO / 4) { // Colisión en el borde izquierdo
+                balin->velocidadX = -abs(balin->velocidadX); // Rebote hacia la izquierda
+            }
+            else if (balin->x > naveDerecha - NAVE_ANCHO / 4) { // Colisión en el borde derecho
+                balin->velocidadX = abs(balin->velocidadX); // Rebote hacia la derecha
+            }
+
+            // Invertir la dirección vertical
+            balin->velocidadY = -abs(balin->velocidadY);
+
         }
+    }
+
+    // Nueva implementación de colisión con enemigos
+    Ptrenemigo enemigoActual = enemigos;
+    while (enemigoActual != NULL) {
+        if (enemigoActual->estado) {
+            // Crear una hitbox rectangular para el enemigo, igual que en tu código de dibujo
+            float enemigoLeft = enemigoActual->x - diametro / 2;
+            float enemigoRight = enemigoActual->x + diametro / 2;
+            float enemigoTop = enemigoActual->y - diametro / 2;
+            float enemigoBottom = enemigoActual->y + diametro / 2;
+
+            // Verificar si la bola colisiona con la hitbox del enemigo
+            if (balin->x + radioBola >= enemigoLeft &&
+                balin->x - radioBola <= enemigoRight &&
+                balin->y + radioBola >= enemigoTop &&
+                balin->y - radioBola <= enemigoBottom) {
+
+                // Desactivar el enemigo
+                enemigoActual->estado = false;
+                puntos += 10;
+
+                // Determinar desde qué dirección vino la colisión
+                float deltaX = balin->x - enemigoActual->x;
+                float deltaY = balin->y - enemigoActual->y;
+
+                // Ajustar la dirección de rebote basado en el punto de impacto
+                if (fabs(deltaX) > fabs(deltaY)) {
+                    // Colisión más horizontal
+                    balin->velocidadX = -balin->velocidadX;
+                }
+                else {
+                    // Colisión más vertical
+                    balin->velocidadY = -balin->velocidadY;
+                }
+
+                // Ajustar la posición de la bola para evitar que se quede "pegada"
+                balin->x += balin->velocidadX;
+                balin->y += balin->velocidadY;
+
+                break; // Salir del bucle después de la colisión
+            }
+        }
+        enemigoActual = enemigoActual->Siguiente;
     }
 
     // Actualizar posición de la bola
@@ -462,13 +438,7 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
                     temp->y + radioEnemigo >= bloqueActual->y + centroY &&
                     temp->y - radioEnemigo <= bloqueActual->y + centroY + altoBloqueEscalado) {
 
-                    // Colisión detectada, manejar interacción
-                    bloqueActual->resistencia--;
-
-                    if (bloqueActual->resistencia == 0) {
-                        bloqueActual->estado = false; // Desactivar bloque si resistencia llega a 0
-                    }
-
+                   
                     // Rebote del enemigo al chocar con el bloque
                     if (temp->y < bloqueActual->y + centroY || temp->y > bloqueActual->y + centroY + altoBloqueEscalado) {
                         temp->velocidadY = -temp->velocidadY;  // Cambiar dirección vertical
@@ -479,6 +449,7 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
                     break; // Termina la comprobación una vez que se detecta una colisión
                 }
             }
+
             bloqueActual = bloqueActual->Siguiente;
         }
 
@@ -544,3 +515,4 @@ bool quedanBloques(Ptrbloque bloques) {
     }
     return false; // No quedan bloques activos
 }
+
