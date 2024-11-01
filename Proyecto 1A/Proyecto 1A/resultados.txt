@@ -39,3 +39,9 @@ Puntaje: 800
 >>>>>>> asdasdasd
 
 
+Nombre:1fgdg
+Puntaje: 2
+Enemigos Eliminados: 2
+Bloques Eliminados: 2
+
+

@@ -587,7 +587,7 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
 
     while (Aux != nullptr) {
 
-        // Limitar el movimiento a los bordes del area del fondo centrado
+        // Limitar el movimiento a los bordes del área del fondo centrado
         if (Aux->x <= centroX) {
             Aux->x = centroX;
             Aux->velocidadX = abs(Aux->velocidadX); // Mover hacia la derecha usando abs
@@ -626,10 +626,10 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
 
                     // Rebote del enemigo al chocar con el bloque
                     if (Aux->y < bloqueActual->y + centroY || Aux->y > bloqueActual->y + centroY + altoBloqueEscalado) {
-                        Aux->velocidadY = -Aux->velocidadY;  // Cambiar direccion vertical
+                        Aux->velocidadY = -Aux->velocidadY;  // Cambiar dirección vertical
                     }
                     else {
-                        Aux->velocidadX = -Aux->velocidadX;  // Cambiar direccion horizontal
+                        Aux->velocidadX = -Aux->velocidadX;  // Cambiar dirección horizontal
                     }
                     break;
                 }
