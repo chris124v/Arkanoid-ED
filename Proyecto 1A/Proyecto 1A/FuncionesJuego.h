@@ -295,7 +295,7 @@ void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
 }
 
 //Funcion de la colision de la bola, toma como parametros: Bola, bloques, jugador, enemigos, vidas, puntos, coordenadas x y y, tamano actual de los bloques.
-void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos) {
+void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos, int& bloques_elim, int&enemigos_elim) {
 
     // Este seria el estandar del tamano del bloque para la hitbox de colision
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) * 1.15;
@@ -369,6 +369,7 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 
                     //Por cada bloque eliminado se suma 5 a la puntuacion general
                     puntos += 5;
+                    bloques_elim++;
 
                 }
 
@@ -457,6 +458,7 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 
                 //Por cada enemigo eliminado se suman 10 puntos
                 puntos += 10;
+                enemigos_elim++;
 
                 // Determinar desde que direccion vino la colision
                 float cayoX = balin->x - enemigoActual->x;
@@ -665,7 +667,7 @@ bool quedanBloques(Ptrbloque bloques) {
 }
 
 //Funcion creararchivo que crea un archivo con un puntaje general y el nombre
-void CrearArchivo(char* puntaje, char* nombre)
+void CrearArchivo(char* puntaje, char* nombre, char* enem_elim, char* b_elim)
 {
     FILE* archivo;
     archivo = fopen("resultados.txt", "a"); //Abre el archivo llamado resultados
@@ -680,6 +682,8 @@ void CrearArchivo(char* puntaje, char* nombre)
     else {
         fprintf(archivo, "Nombre:%s\n", nombre);
         fprintf(archivo, "Puntaje: %s\n", puntaje);
+        fprintf(archivo, "Enemigos Eliminados: %s\n", enem_elim);
+        fprintf(archivo, "Bloques Eliminados: %s\n", b_elim);
         fprintf(archivo, "\n\n");
     }
 
@@ -692,7 +696,9 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
 {   
     //Establecemos limites para nombre y puntaje
     char nombre[40];
-    char puntaje[10];
+    char puntaje[30];
+    char enemigos_eliminados[30];
+    char bloques_eliminados[30];
     int i = 0;
     int e = 0;
 
@@ -710,6 +716,8 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
             //Leemos nombre y puntaje
             fscanf(archivo, "Nombre:%s\n", nombre);
             fscanf(archivo, "Puntaje: %s\n", puntaje);
+            fscanf(archivo, "Enemigos eliminados:%s\n", enemigos_eliminados);
+            fscanf(archivo, "Bloques elimnados:%s\n", bloques_eliminados);
 
             //Leemos tanto nombre como puntaje y lo imprimimos
             if (inicio <= i && i < inicio + 4) {
@@ -717,6 +725,10 @@ void CargarArchivo(int x, int y, ALLEGRO_FONT* fuente, int inicio)
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (300.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, nombre);
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Puntaje: ");
                 al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (330.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, puntaje);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (360.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Enemigos Eliminados: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (360.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, enemigos_eliminados);
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (390.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_RIGHT, "Bloques Eliminados: ");
+                al_draw_text(fuente, al_map_rgb(250, 250, 250), x / 2, (y * (390.0 / 768.0)) + 75 * e, ALLEGRO_ALIGN_LEFT, bloques_eliminados);
                 e++;
             }
 

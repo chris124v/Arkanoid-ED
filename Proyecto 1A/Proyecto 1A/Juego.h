@@ -46,6 +46,7 @@ int arkanoid(int nivel, int vidas) {
     //Establecemos los tipos de fuentes a cargar con su tamano
     ALLEGRO_FONT* fuente1 = al_load_font("Video-Font.ttf", 40, NULL);
     ALLEGRO_FONT* fuente2 = al_load_font("Video-Font.ttf", 30, NULL);
+    ALLEGRO_FONT* fuente3 = al_load_font("Video-Font.ttf", 20, NULL);
 
     //Este mensaje se da en caso de que no se puedan cargar las fuentes
     if (!fuente1 || !fuente2) {
@@ -104,9 +105,11 @@ int arkanoid(int nivel, int vidas) {
     //Establecemos las variables del juegp
     bool hecho = true;
     int puntos = 0;
+    int bloques_elim = 0;
+    int enemigos_elim = 0;
 
     //Buffer para el nombre
-    char buffer[20];
+    char buffer[50];
 
     //Salida del juego
     int salida = 0;
@@ -173,15 +176,31 @@ int arkanoid(int nivel, int vidas) {
             //Cambia al siguiente nivel
             al_rest(2);
 
+            // Limpieza completa de enemigos
+            while (enemigos != NULL) {
+                Ptrenemigo temp = enemigos;
+                enemigos = enemigos->Siguiente;
+                delete temp;
+            }
+            enemigos = NULL;
+
+            // Reiniciar la bola
+            if (bola != NULL) {
+                delete bola;
+            }
+
+            inicializar_bola(bola, jugador, 10);
+
+            // Ajustar posición inicial de la bola
+            bola->x = jugador.x + centroX;
+            bola->y = jugador.y - 20;
+            bola->velocidadX = 2;
+            bola->velocidadY = -2;
+
             // Generación de nueva formacion de bloques y suma de puntos
             formacion_bloques(bloques, nivel, bloque);
 
-            // Reposicionar la bola al inicio del nuevo nivel
-            bola->x = jugador.x + centroX;
-            bola->y = jugador.y + centroY - 10;
-            bola->velocidadY = -fabs(bola->velocidadY); // Asegura que la bola vaya hacia arriba
-
-
+            
             //Suma de puntos de 100 por cada nivel
             puntos += 100;
 
@@ -275,42 +294,33 @@ int arkanoid(int nivel, int vidas) {
             // Dibujar fondo centrado sin cambiar su proporcion vertical
             al_draw_scaled_bitmap(fondo, 0, 0, al_get_bitmap_width(fondo), al_get_bitmap_height(fondo), centroX, centroY, RX, RY, 0);
 
-            //Establecemos la lista enlazada de bloques
+            //Inicialiamos la lista enlazada de bloques
             Ptrbloque bloquesss = bloques;
 
-            // Bitmaps de todos los bloques
+            //Llamamos a todos los bitmaps para las hileras de bloques
             ALLEGRO_BITMAP* hileras[7] = { bloque, bloque2, bloque3, bloque4, bloque5, bloque6, bloque7 };
 
-            // Factor de escala para ajustar el tamano de los bloques
-            float factorEscala = 1.15;  
-
-            // Recorre todos los bloques
-            int bloqueIndex = 0; // Para contar la posición de cada bloque
+            // Factor de escala para el tamano real de los bloques
+            float factorEscala = 1.15;
             int bloquesPorFila = 8; // Numero de bloques por cada fila
+            int alto_b = al_get_bitmap_height(bloque) * factorEscala; // Altura escalada de cada bloque
 
-            //Mientras no se llegue al final
+            // Recorre todos los bloques y dibuja cada uno
             while (bloquesss != NULL) {
-
-                // Si el bloque esta activo
                 if (bloquesss->estado) {
-
-                    // Determinar la hilera actual usando bloqueIndex y bloquesPorFila
-                    int hilera = bloqueIndex / bloquesPorFila;
+                    // Calcular la fila del bloque usando la posición y su altura
+                    int fila = (bloquesss->y - 100) / alto_b;  // Suponiendo que la posición inicial en y es 100
+                    int hilera = fila % 7;  // Ciclo entre las 7 hileras de imágenes
 
                     // Selecciona la imagen correspondiente a la hilera
                     ALLEGRO_BITMAP* bloqueActual = hileras[hilera];
 
-                    // Verificar las dimensiones de la imagen
-                    int ancho_e = al_get_bitmap_width(bloqueActual);
-                    int alto_e = al_get_bitmap_height(bloqueActual);
-
                     // Dibujar el bloque escalado con el factor de escala ajustado
-                    al_draw_scaled_bitmap(bloqueActual, 0, 0, ancho_e, alto_e, bloquesss->x + centroX, bloquesss->y + centroY, ancho_e * factorEscala, alto_e * factorEscala, 0);
+                    al_draw_scaled_bitmap(bloqueActual, 0, 0, al_get_bitmap_width(bloqueActual), al_get_bitmap_height(bloqueActual), bloquesss->x + centroX, bloquesss->y + centroY, al_get_bitmap_width(bloqueActual) * factorEscala, al_get_bitmap_height(bloqueActual) * factorEscala, 0);
                 }
 
                 // Avanza al siguiente bloque en la lista
                 bloquesss = bloquesss->Siguiente;
-                bloqueIndex++; // Incrementa el índice para llevar el seguimiento de la posición
             }
 
 
@@ -384,7 +394,7 @@ int arkanoid(int nivel, int vidas) {
             }
 
             // Llamamos a la funcion de colision con la bola
-            colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos);
+            colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos, bloques_elim, enemigos_elim);
 
             
 
@@ -439,6 +449,12 @@ int arkanoid(int nivel, int vidas) {
             sprintf(buffer, "Vidas: %d", vidas);
             al_draw_text(fuente1, al_map_rgb(255, 255, 255), pantallaAncho - 100, 70, ALLEGRO_ALIGN_RIGHT, buffer);
 
+            sprintf(buffer, "Enemigos Eliminados: %d", enemigos_elim);
+            al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 40, ALLEGRO_ALIGN_LEFT, buffer);
+
+            sprintf(buffer, "Bloques Eliminados: %d", bloques_elim);
+            al_draw_text(fuente2, al_map_rgb(255, 255, 255), 20, 90, ALLEGRO_ALIGN_LEFT, buffer);
+
             //En caso de que se llegue a 0 vidas
             if (vidas <= 0) {
 
@@ -456,9 +472,20 @@ int arkanoid(int nivel, int vidas) {
 
                 //Establecemos diversas variables para puntaje y demas
                 int seguir = true;
-                char puntaje[20] = "Puntaje: ";
+                char puntaje[60] = "Puntaje, Enemigos Eliminados y Bloques Eliminados: ";
+                char enemigos_elim2[30] = ", ";
+                char bloques_elim2[30] = ", ";
+
                 sprintf(buffer, "%d", puntos);  // Asegurarse de usar los puntos actuales
-                strcat_s(puntaje, 20, buffer);
+                strcat_s(puntaje, 60, buffer);
+
+                sprintf(buffer, "%d", enemigos_elim);  //Guarda los enemigos
+                strcat_s(enemigos_elim2, 30, buffer);
+
+                sprintf(buffer, "%d", bloques_elim);  //Guarda los bloques
+                strcat_s(bloques_elim2, 30, buffer);
+
+
                 char nombre[40] = { '_' };
                 int pos = 0;
 
@@ -489,7 +516,7 @@ int arkanoid(int nivel, int vidas) {
 
                                 // Guardar el archivo antes de salir
                                 if (pos == 0) nombre[0] = '?';
-                                CrearArchivo(buffer, nombre);
+                                CrearArchivo(buffer, nombre, enemigos_elim2, bloques_elim2);
 
                                 // Limpiar la pantalla 
                                 al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -522,8 +549,10 @@ int arkanoid(int nivel, int vidas) {
 
                     // Redibujar la pantalla
                     al_clear_to_color(al_map_rgb(0, 0, 0));
-                    al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 250, ALLEGRO_ALIGN_CENTRE, "FIN DEL JUEGO");
+                    al_draw_text(fuente1, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 250, ALLEGRO_ALIGN_CENTRE, "Game Over!");
                     al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, puntaje);
+                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 630, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, enemigos_elim2);
+                    al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2 + 700, pantallaAlto / 2 - 150, ALLEGRO_ALIGN_CENTRE, bloques_elim2);
                     al_draw_text(fuente2, al_map_rgb(0, 255, 255), pantallaAncho / 2, pantallaAlto / 2, ALLEGRO_ALIGN_CENTRE, nombre);
                     al_draw_text(fuente2, al_map_rgb(255, 255, 255), pantallaAncho / 2, pantallaAlto / 2 + 200, ALLEGRO_ALIGN_CENTRE, "Presione Enter para volver al menu");
 

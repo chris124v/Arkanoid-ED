@@ -134,3 +134,91 @@ Nombre:Chris
 Puntaje: 175
 
 
+Nombre:Chris
+Puntaje: 125
+
+
+Nombre:Chris
+Puntaje: 1335
+
+
+Nombre:Chris
+Puntaje: 730
+
+
+Nombre:Chris
+Puntaje: 120
+
+
+Nombre:Chris
+Puntaje: 5
+Enemigos Eliminados: Enemigos Eliminados: 4
+Blqoues Eliminados: Blqoues Eliminados: 5
+
+
+Nombre:Chrisprueba
+Puntaje: 3
+Enemigos Eliminados: 3
+Blqoues Eliminados: 3
+
+
+Nombre:?
+Puntaje: 4
+Enemigos Eliminados: 2
+Bloques Eliminados: 4
+
+
+Nombre:?
+Puntaje: 2
+Enemigos Eliminados: 1
+Bloques Eliminados: 2
+
+
+Nombre:?
+Puntaje: 3
+Enemigos Eliminados: 2
+Bloques Eliminados: 3
+
+
+Nombre:fifi
+Puntaje: 4
+Enemigos Eliminados: Enemigos Eliminados: 4
+Bloques Eliminados: Bloques Eliminados: 4
+
+
+Nombre:?
+Puntaje: 2
+Enemigos Eliminados: 1
+Bloques Eliminados: 2
+
+
+Nombre:?
+Puntaje: 2
+Enemigos Eliminados: 2
+Bloques Eliminados: 2
+
+
+Nombre:Chris
+Puntaje: 3
+Enemigos Eliminados: 3
+Bloques Eliminados: 3
+
+
+Nombre:?
+Puntaje: 12
+Enemigos Eliminados: , 3
+Bloques Eliminados: , 12
+
+
+Nombre:?
+Puntaje: 6
+Enemigos Eliminados: , 2
+Bloques Eliminados: , 6
+
+
+Nombre:Chris
+Puntaje: 2
+Enemigos Eliminados: , 2
+Bloques Eliminados: , 2
+
+
