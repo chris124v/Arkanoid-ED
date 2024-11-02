@@ -42,6 +42,9 @@ void main()
     al_init_primitives_addon();
     al_install_keyboard();
     al_install_mouse();
+    al_install_audio();
+    al_init_acodec_addon();
+    al_reserve_samples(7);
 
     //Obtenemos la informacion del monitor donde se esta corriendo el juego
     ALLEGRO_MONITOR_INFO monitor;
@@ -74,6 +77,15 @@ void main()
     ALLEGRO_BITMAP* Fondo = al_load_bitmap("Imagenes/fondo_main.jpg");
     ALLEGRO_BITMAP* Logo = al_load_bitmap("Imagenes/arkanoid.png");
     ALLEGRO_BITMAP* Flecha = al_load_bitmap("Imagenes/Flecha.png");
+
+    // Carga de música de fondo
+    ALLEGRO_SAMPLE* Musica_Menu = al_load_sample("Sonidos/Musica_Menu.wav");
+
+    // Verificar si alguno de los samples no se pudo cargar
+    if (!Musica_Menu) {
+        fprintf(stderr, "Error: No se pudo cargar uno o más archivos de sonido.\n");
+        return;
+    }
 
     //Estos dos if son en caso de que no se encuentren las imagenes
     if (!Fondo) {
@@ -111,6 +123,8 @@ void main()
     bool hecho = true;
     int inicio = 0;
     
+    // Reproducir la música en bucle
+    al_play_sample(Musica_Menu, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     //Inicializamos los timers
     al_start_timer(timer);
@@ -206,6 +220,9 @@ void main()
                     int vida = 3;
                     int nivel = 1;
                     
+                    // Pausar la música de fondo
+                    al_stop_samples();
+
                     //Mientras las vidas no lleguen a 0
                     while (vida != 0) {
 

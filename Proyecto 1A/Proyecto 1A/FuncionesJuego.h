@@ -299,7 +299,7 @@ void inicializar_bola(Ptrbola& bola, nave& jugador, int radio) {
 }
 
 //Funcion de la colision de la bola, toma como parametros: Bola, bloques, jugador, enemigos, vidas, puntos, coordenadas x y y, tamano actual de los bloques.
-void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos, int& bloques_elim, int&enemigos_elim) {
+void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo& enemigos, int& vidas, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, int& puntos, int& bloques_elim, int& enemigos_elim, ALLEGRO_SAMPLE* Rebote_Bola) {
 
     // Este seria el estandar del tamano del bloque para la hitbox de colision
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) * 1.15;
@@ -315,7 +315,7 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
     /*
     Este seria el de la parte izquierda, basicamente si la posicion de la
     bola menos el radio de la bola es menor o igual al centroX que es el borde
-    designado va a invertir la velocidad en x de la bola, este proceso se repite 
+    designado va a invertir la velocidad en x de la bola, este proceso se repite
     para todos los bordes
     */
 
@@ -323,18 +323,21 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
     if (balin->x - radioBola <= centroX) {
         balin->x = centroX + radioBola; // Ajustar la posicion de la bola
         balin->velocidadX = -balin->velocidadX; // Cambiar direccion segun pega
+        al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
     }
 
     //Caso de la derecha
     if (balin->x + radioBola >= centroX + ResX) {
         balin->x = centroX + ResX - radioBola; // Ajustar la posicion
         balin->velocidadX = -balin->velocidadX; // Cambiar direccion
+        al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
     }
 
     //Caso del borde superior
     if (balin->y - radioBola <= centroY) {
         balin->y = centroY + radioBola; // Ajustar la posición para no salir
         balin->velocidadY = -balin->velocidadY; // Cambiar dirección
+        al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
     }
 
     //Este seria el caso del borde inferior en donde si la bola baja se reducen las vidas
@@ -344,7 +347,7 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
         balin->x = jugador.x + centroX;  // Reposiciona en la zona centrada
         balin->y = jugador.y + centroY - 10; // Reposicionar justo encima de la nave
         balin->velocidadY = -fabs(balin->velocidadY); // Invertir direccion
-
+        al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
     }
 
     // Verificar colision con bloques llamamos a la struct
@@ -369,15 +372,16 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                 if (bloqueActual->resistencia <= 0) {
 
                     //El bloque con el que pego desaparece
-                    bloqueActual->estado = false; 
+                    bloqueActual->estado = false;
 
                     //Por cada bloque eliminado se suma 5 a la puntuacion general
                     puntos += 5;
                     bloques_elim++;
+                    al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
 
                 }
 
-                
+
 
                 // Rebote de la bola al chocar con el bloque segun las dimensiones
                 float choqueX = (balin->x + radioBola) - (bloqueActual->x + centroX);
@@ -395,7 +399,8 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                     balin->x += (balin->velocidadX > 0) ? -1 : 1; // Ajustamos la posicion
                 }
 
-                break; 
+                al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
+                break;
             }
         }
 
@@ -432,6 +437,7 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
 
             // Invertir la dirección vertical de la bola, usamos abs para el valor absoluto
             balin->velocidadY = -abs(balin->velocidadY);
+            al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
 
         }
     }
@@ -484,8 +490,9 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
                 // Ajustamos la posicion del balin segun la velocidad
                 balin->x += balin->velocidadX;
                 balin->y += balin->velocidadY;
+                al_play_sample(Rebote_Bola, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Volumen 0.5
 
-                break; 
+                break;
             }
         }
 
@@ -493,10 +500,9 @@ void colision_bola(Ptrbola& balin, Ptrbloque& bloques, nave& jugador, Ptrenemigo
         enemigoActual = enemigoActual->Siguiente;
     }
 
-    // Actualizar posición de la bola
-    balin->x += balin->velocidadX;
-    balin->y += balin->velocidadY;
+    
 }
+
 
 
 //Funcion para generar los enemigos
@@ -573,7 +579,7 @@ void generar_enemigos(Ptrenemigo& enemigos, int cantidad, int nivel, Ptrbloque b
 }
 
 // Funcion para mover los enemigos
-void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, nave& jugador, int& puntos) {
+void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int centroY, ALLEGRO_BITMAP* bloques2, nave& jugador, int& puntos, ALLEGRO_SAMPLE* Rebote_Enemigos, ALLEGRO_SAMPLE* Puntos) {
 
     // Definir el tamano escalado de los bloques
     const int anchoBloqueEscalado = al_get_bitmap_width(bloques2) / 2 - 5;
@@ -591,22 +597,26 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
         if (Aux->x <= centroX) {
             Aux->x = centroX;
             Aux->velocidadX = abs(Aux->velocidadX); // Mover hacia la derecha usando abs
+            al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para el rebote en pared
         }
         if (Aux->x + diametro >= centroX + ResX) {
             Aux->x = centroX + ResX - diametro;
             Aux->velocidadX = -abs(Aux->velocidadX); // Mover hacia la izquierda usando abs
+            al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para el rebote en pared
         }
 
         // Caso para mover hacia abajo
         if (Aux->y <= centroY) {
             Aux->y = centroY;
             Aux->velocidadY = abs(Aux->velocidadY); // Mover hacia abajo
+            al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para el rebote en pared
         }
 
         // Caso para mover hacia arriba
         if (Aux->y + diametro >= centroY + ResY) {
             Aux->y = centroY + ResY - diametro;
             Aux->velocidadY = -abs(Aux->velocidadY); // Mover hacia arriba
+            al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para el rebote en pared
         }
 
         // Verificar colisión con bloques, ajustando por el radio del enemigo
@@ -631,6 +641,7 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
                     else {
                         Aux->velocidadX = -Aux->velocidadX;  // Cambiar dirección horizontal
                     }
+                    al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para el rebote en bloque
                     break;
                 }
             }
@@ -649,6 +660,7 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
             Aux->y + radioEnemigo >= nave_superior && Aux->y - radioEnemigo <= nave_inf) {
 
             puntos -= 5;
+            al_play_sample(Puntos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para colisión con la nave
 
             // Determinar el eje principal de colision
             float deltaX = (Aux->x + radioEnemigo / 2) - (nave_izqui + nave_ancho / 2);
@@ -694,6 +706,8 @@ void mover_enemigos(Ptrenemigo& enemigos, Ptrbloque& bloques, int centroX, int c
                     Aux->y += (distanciaY > 0) ? 5 : -5;
                     coli_enem->x += (distanciaX < 0) ? 5 : -5;
                     coli_enem->y += (distanciaY < 0) ? 5 : -5;
+
+                    al_play_sample(Rebote_Enemigos, 0.25, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducción de sonido para colisión entre enemigos
                 }
             }
             coli_enem = coli_enem->Siguiente;

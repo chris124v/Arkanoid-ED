@@ -25,8 +25,8 @@ int arkanoid(int nivel, int vidas) {
     const int pantallaAlto = monitor.y2 - monitor.y1;
 
     // Dimensiones fijas del area de juego
-    const int RX = 800; 
-    const int RY = 1100; 
+    const int RX = 800;
+    const int RY = 1100;
 
     //Obtenemos la pantallla o display y lo acomodamos segun el monitor.
     ALLEGRO_DISPLAY* pantalla = al_create_display(pantallaAncho, pantallaAlto);
@@ -42,6 +42,37 @@ int arkanoid(int nivel, int vidas) {
         al_show_native_message_box(NULL, "Ventana Emergente", "Error", "No se puede crear la pantalla", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
+
+    // Inicialización del sistema de audio y códecs
+    if (!al_install_audio()) {
+        fprintf(stderr, "Error: No se pudo inicializar el sistema de audio.\n");
+        return 0;
+    }
+    if (!al_init_acodec_addon()) {
+        fprintf(stderr, "Error: No se pudo inicializar los códecs de audio.\n");
+        return 0;
+    }
+    if (!al_reserve_samples(50)) { // Reserva un solo canal si solo necesitas la música
+        fprintf(stderr, "Error: No se pudo reservar el canal de audio.\n");
+        return 0;
+    }
+
+    // Carga de música de fondo
+    ALLEGRO_SAMPLE* Musica_Arkanoid = al_load_sample("Sonidos/Musica_Arkanoid.wav");
+    ALLEGRO_SAMPLE* Game_Over = al_load_sample("Sonidos/Game_Over.mp3");
+    ALLEGRO_SAMPLE* Niveles = al_load_sample("Sonidos/Niveles.mp3");
+    ALLEGRO_SAMPLE* Puntos = al_load_sample("Sonidos/Puntos.mp3");
+    ALLEGRO_SAMPLE* Rebote_Bola = al_load_sample("Sonidos/Rebote_Bola.wav");
+    ALLEGRO_SAMPLE* Rebote_Enemigos = al_load_sample("Sonidos/Rebote_Enemigos.wav");
+
+    // Verificar si alguno de los samples no se pudo cargar
+    if (!Musica_Arkanoid || !Game_Over || !Niveles || !Puntos || !Rebote_Bola || !Rebote_Enemigos) {
+        fprintf(stderr, "Error: No se pudo cargar uno o más archivos de sonido.\n");
+        return 0;
+    }
+
+    // Reproducir la música en bucle
+    al_play_sample(Musica_Arkanoid, 0.3, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     //Establecemos los tipos de fuentes a cargar con su tamano
     ALLEGRO_FONT* fuente1 = al_load_font("Video-Font.ttf", 40, NULL);
@@ -72,24 +103,11 @@ int arkanoid(int nivel, int vidas) {
     ALLEGRO_BITMAP* enemigo3 = al_load_bitmap("Imagenes/Enemigo3.png");
 
     //Mensaje en caso de que no se puedan cargar las imagenes
-    if (!bloque || !fondo || !nave2 ) {
+    if (!bloque || !fondo || !nave2 || !fondos || !bolas || !enemigo1 || !enemigo2 || !enemigo3) {
         al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
         return 0;
     }
 
-    //Mensaje en caso de que no se puedan cargar las imagenes
-    if (!fondos || !bolas || !enemigo1) {
-        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
-        return 0;
-    }
-
-    //Mensaje en caso de que no se puedan cargar las imagenes
-    if (!enemigo2 || !enemigo3 ) {
-        al_show_native_message_box(pantalla, "Error", "Carga de Imagen", "No se pudo cargar una o mas imagenes.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
-        return 0;
-    }
-    
-    
     //Establecemos las direcciones de la nave
     enum Direccion { NINGUNA, IZQUIERDA, DERECHA };
     enum Direccion Dir = NINGUNA; //Definimos una direccion para que no se mueva
@@ -104,7 +122,7 @@ int arkanoid(int nivel, int vidas) {
     al_register_event_source(cola_eventos, al_get_timer_event_source(timer));
     al_register_event_source(cola_eventos, al_get_keyboard_event_source());
 
-    //Establecemos las variables del juegp
+    //Establecemos las variables del juego
     bool hecho = true;
     bool juego_in = false;
     int puntos = 0;
@@ -117,15 +135,15 @@ int arkanoid(int nivel, int vidas) {
     //Salida del juego
     int salida = 0;
 
-    //Inicializamos el jugador, bola, enemigos y bloqq
+    //Inicializamos el jugador, bola, enemigos y bloques
     nave jugador;
-    Ptrbola bola = NULL; 
+    Ptrbola bola = NULL;
     Ptrbloque bloques = NULL;
     Ptrenemigo enemigos = NULL;
 
     //Probabilidades por nivel
     int proba_enem = 2;
-    int enem_nivel = 1;  
+    int enem_nivel = 1;
     int enemigos_genera = 0;
 
     // Calcula la posición para centrar el área de juego en pantalla completa
@@ -165,6 +183,10 @@ int arkanoid(int nivel, int vidas) {
             // Resetea el contador de enemigos generados para el nuevo nivel
             enemigos_genera = 0;
 
+            // Pausar la música de fondo
+            al_stop_samples(); // Pausa todos los sonidos (incluyendo Musica_Arkanoid)
+            al_play_sample(Niveles, 0.5, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducir sonido de cambio de nivel
+
             // Mensaje de transicion de nivel
             al_clear_to_color(al_map_rgb(0, 0, 0));
 
@@ -203,9 +225,12 @@ int arkanoid(int nivel, int vidas) {
             // Generación de nueva formacion de bloques y suma de puntos
             formacion_bloques(bloques, nivel, bloque);
 
-            
+
             //Suma de puntos de 100 por cada nivel
             puntos += 100;
+
+            // Reanudar la música de fondo
+            al_play_sample(Musica_Arkanoid, 0.5, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL); // Reanudar Musica_Arkanoid en loop
 
             continue;
         }
@@ -275,7 +300,7 @@ int arkanoid(int nivel, int vidas) {
                 }
 
                 //Llamamos la funcion de mover los enemigos en el area del juego
-                mover_enemigos(enemigos, bloques, centroX, centroY, bloque, jugador, puntos);
+                mover_enemigos(enemigos, bloques, centroX, centroY, bloque, jugador, puntos, Rebote_Enemigos, Puntos);
 
 
 
@@ -413,7 +438,7 @@ int arkanoid(int nivel, int vidas) {
                 }
 
                 // Llamamos a la funcion de colision con la bola
-                colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos, bloques_elim, enemigos_elim);
+                colision_bola(bola, bloques, jugador, enemigos, vidas, centroX, centroY, bloque, puntos, bloques_elim, enemigos_elim, Rebote_Bola);
 
 
 
@@ -484,6 +509,10 @@ int arkanoid(int nivel, int vidas) {
                     // Establecer variables para salir del juego
                     hecho = false;
                     salida = 1;
+
+                    // Pausar la música de fondo
+                    al_stop_samples(); // Pausa todos los sonidos (incluyendo Musica_Arkanoid)
+                    al_play_sample(Game_Over, 0.5, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Reproducir sonido de cambio de nivel
                 }
 
                 // En caso de que hecho no se cumpla y salida sea 1
@@ -596,6 +625,16 @@ int arkanoid(int nivel, int vidas) {
     al_destroy_bitmap(fondo);
     al_destroy_bitmap(fondorep);
     al_destroy_event_queue(cola_eventos);
+
+    // Destruir todos los samples de audio cargados
+    al_destroy_sample(Musica_Arkanoid);
+    al_destroy_sample(Game_Over);
+    al_destroy_sample(Niveles);
+    al_destroy_sample(Puntos);
+    al_destroy_sample(Rebote_Bola);
+    al_destroy_sample(Rebote_Enemigos);
+
+    al_uninstall_audio();
     
     //Devuelve la salida
     return salida;

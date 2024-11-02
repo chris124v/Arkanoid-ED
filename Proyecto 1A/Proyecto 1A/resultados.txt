@@ -45,3 +45,21 @@ Enemigos Eliminados: 2
 Bloques Eliminados: 2
 
 
+Nombre:dfsafd
+Puntaje: 39
+Enemigos Eliminados: 4
+Bloques Eliminados: 39
+
+
+Nombre:daad
+Puntaje: 0
+Enemigos Eliminados: 3
+Bloques Eliminados: 0
+
+
+Nombre:sfds
+Puntaje: 29
+Enemigos Eliminados: 3
+Bloques Eliminados: 29
+
+
