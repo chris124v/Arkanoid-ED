@@ -63,3 +63,21 @@ Enemigos Eliminados: 3
 Bloques Eliminados: 29
 
 
+Nombre:Chris
+Puntaje: 25
+Enemigos Eliminados: 3
+Bloques Eliminados: 25
+
+
+Nombre:Chris_Prueba
+Puntaje: 3
+Enemigos Eliminados: 3
+Bloques Eliminados: 3
+
+
+Nombre:?
+Puntaje: 6
+Enemigos Eliminados: 4
+Bloques Eliminados: 6
+
+

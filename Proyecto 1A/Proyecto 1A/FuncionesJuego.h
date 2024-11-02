@@ -263,9 +263,9 @@ void formacion_bloques(Ptrbloque& bloques, int nivel, ALLEGRO_BITMAP* bloques2) 
 
             //Si no se ha anadido lo recorremos y agregamos al final como si de una cola se tratase
             else {
-                Ptrbloque temp = bloques;
-                while (temp->Siguiente) temp = temp->Siguiente;
-                temp->Siguiente = nuevoBloque;
+                Ptrbloque Aux = bloques;
+                while (Aux->Siguiente) Aux = Aux->Siguiente;
+                Aux->Siguiente = nuevoBloque;
             }
         }
 
