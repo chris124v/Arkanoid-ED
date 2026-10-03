@@ -7,9 +7,11 @@ Recreación del clásico videojuego Arkanoid en C++ con la biblioteca gráfica A
   <img src="docs/juego.png" alt="Partida en el primer nivel" width="45%">
 </p>
 
-![C++](https://img.shields.io/badge/C%2B%2B-Visual%20Studio%202022-blue)
-![Allegro](https://img.shields.io/badge/Allegro-5.2.9-orange)
-![Estado](https://img.shields.io/badge/estado-completado-green)
+<p align="center">
+  <img src="https://img.shields.io/badge/C%2B%2B-Visual%20Studio%202022-blue" alt="C++">
+  <img src="https://img.shields.io/badge/Allegro-5.2.9-orange" alt="Allegro">
+  <img src="https://img.shields.io/badge/estado-completado-green" alt="Estado">
+</p>
 
 ---
 
