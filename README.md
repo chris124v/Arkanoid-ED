@@ -1,6 +1,6 @@
 # Arkanoid ED
 
-Recreación del clásico videojuego **Arkanoid** en C++ con la biblioteca gráfica Allegro 5, hecha para el curso **Estructuras de Datos**. Controlas una nave en la parte inferior, rebotas una bola para destruir bloques de colores, esquivas enemigos y avanzas por 10 niveles con 3 vidas.
+Recreación del clásico videojuego Arkanoid en C++ con la biblioteca gráfica Allegro 5, hecha para el curso de Estructuras de Datos. Controlas una nave en la parte inferior, rebotas una bola para destruir bloques de colores, esquivas enemigos y avanzas por 10 niveles con 3 vidas.
 
 <p align="center">
   <img src="docs/menu-principal.png" alt="Menú principal de Arkanoid" width="45%">
@@ -26,7 +26,7 @@ Recreación del clásico videojuego **Arkanoid** en C++ con la biblioteca gráfi
 
 ---
 
-## Características
+## Features
 * Menú principal controlado con el mouse: **Jugar**, **Reglas**, **Resultados** y **Salir**, con resaltado al pasar el cursor.
 * 10 niveles con formaciones de bloques distintas; los bloques tienen resistencia aleatoria de 1 a 5 golpes.
 * Enemigos que aparecen durante la partida y se mueven con velocidad y dirección aleatorias.
@@ -38,7 +38,7 @@ Recreación del clásico videojuego **Arkanoid** en C++ con la biblioteca gráfi
 ---
 
 ## Autores
-* **Christopher Daniel Vargas Villalta** – [@chris124v](https://github.com/chris124v)
+* Christopher Daniel Vargas Villalta, 2024108443
 * Santiago Espinoza Rendón
 
 **Curso:** Estructuras de Datos (Grupo 3)
@@ -67,7 +67,7 @@ Recreación del clásico videojuego **Arkanoid** en C++ con la biblioteca gráfi
 
 ---
 
-## Arquitectura
+## Flujos de Juego
 Programa en C++ basado en eventos con un ciclo principal a 60 FPS. El menú (`Arkanoid.cpp`) lanza el juego (`Juego.h`), que usa las funciones de lógica de `FuncionesJuego.h`.
 
 ```mermaid
@@ -120,7 +120,7 @@ Arkanoid-ED/
 
 ---
 
-## Cómo Ejecutar
+## Ejecucion
 
 ### Requisitos previos
 * Windows con **Visual Studio 2022** y el componente *Desarrollo para el escritorio con C++*.
@@ -141,13 +141,9 @@ Arkanoid-ED/
 ## Documentación
 * [Anteproyecto 1A y 1B (PDF)](docs/Anteproyecto-1A-1B.pdf) – plan de desarrollo, subrutinas, algoritmos, interfaz y cronograma, entregado el 19 de septiembre de 2024.
   * **Proyecto 1A:** Arkanoid (este repositorio).
-  * **Proyecto 1B:** comparador de rendimiento de listas enlazadas, árboles BST, AVL y B-Tree sobre un padrón electoral. Solo está descrito en el anteproyecto; no forma parte de este repositorio.
-* El anteproyecto planteaba más niveles, bonus, un jefe final y otra tabla de puntajes; la versión final implementa el juego con 10 niveles y los puntajes descritos arriba.
 
 ---
 
-## Qué Aprendí
+## Conocimientos Adquiridos
 * A usar memoria dinámica y listas enlazadas con punteros para manejar elementos del juego que aparecen y desaparecen (bloques, enemigos, bola) y a liberarla correctamente.
 * A trabajar con programación orientada a eventos: cola de eventos, timers y teclado/mouse en una biblioteca gráfica como Allegro.
-* A dividir el juego en menú, ciclo principal y funciones de lógica, y a planificar el trabajo en pareja con un cronograma.
-* Con más tiempo: implementar los bonus y el jefe final del anteproyecto, y separar las funciones de `FuncionesJuego.h` en archivos `.h` y `.cpp` para facilitar el mantenimiento.
