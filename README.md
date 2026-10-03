@@ -16,15 +16,15 @@ Recreación del clásico videojuego Arkanoid en C++ con la biblioteca gráfica A
 ---
 
 ## Tabla de Contenidos
-- [Características](#características)
+- [Features](#features)
 - [Autores](#autores)
 - [Cómo se Juega](#cómo-se-juega)
-- [Arquitectura](#arquitectura)
+- [Flujo de Juego](#flujo-de-juego)
 - [Tecnologías](#tecnologías)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Cómo Ejecutar](#cómo-ejecutar)
+- [Ejecucion](#ejecucion)
 - [Documentación](#documentación)
-- [Qué Aprendí](#qué-aprendí)
+- [Conocimientos Adquiridos](#conocimientos-adquiridos)
 
 ---
 
